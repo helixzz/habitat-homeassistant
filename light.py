@@ -1,6 +1,7 @@
 """Light platform for 栖息地智能家庭."""
 
 import logging
+import time
 from typing import Any
 
 from homeassistant.components.light import ColorMode, LightEntity
@@ -72,6 +73,8 @@ class HabitatLight(LightEntity):
         self._device_data = device_data
         self._state = False
         self._brightness = 0
+        # 控制后一段时间内不允许多源用网关数据覆盖开关/亮度，避免界面被滞后数据改回
+        self._last_control_time: float = 0.0
 
         self._update_state()
 
@@ -84,7 +87,9 @@ class HabitatLight(LightEntity):
         return self._apis_by_uid.get(self._primary_uid) or self._default_api
 
     def _update_state(self):
-        """Update state from device data. 网关 level 为 0-255，与 HA 一致。"""
+        """Update state from device data. 控制后 10 秒内不覆盖开关/亮度，避免网关滞后数据把界面改回。"""
+        if time.monotonic() - self._last_control_time < 10.0:
+            return
         dev_attrs = self._device_data.get("dev_attrs", [])
         for attr in dev_attrs:
             attr_name = attr.get("name")
@@ -152,8 +157,9 @@ class HabitatLight(LightEntity):
             self._brightness = level_ha
         elif not self._brightness:
             self._brightness = 255
+        self._last_control_time = time.monotonic()
         self.async_write_ha_state()
-        # 不 await 网关，使服务调用立即返回，前端即可刷新开关；网关在后台执行，失败则回滚
+        # 不 await 网关，使服务调用立即返回；控制后 10s 内 _update_state 不覆盖，避免滞后数据改回
         self.hass.async_create_task(
             self._send_turn_on_and_sync(level_ha, old_state, old_brightness)
         )
@@ -173,10 +179,11 @@ class HabitatLight(LightEntity):
             self._brightness = old_brightness
             self.async_write_ha_state()
             return
-        await self._refresh_and_write_state()
+        # 延迟 4 秒再拉网关，给网关时间更新设备列表，减少用旧数据覆盖界面
+        self.hass.async_call_later(4.0, lambda _: self.hass.async_create_task(self._refresh_and_write_state()))
 
     async def _refresh_and_write_state(self) -> None:
-        """后台从 coordinator 拉取最新设备数据并更新实体状态（用于控制后与网关同步）。"""
+        """后台从 coordinator 拉取设备数据并更新实体（控制后 10s 内 _update_state 不会覆盖开关/亮度）。"""
         await self._coordinator.async_request_refresh()
         for device in self._coordinator.data or []:
             if device.get("deviceUid") == self._device_uid:
@@ -189,6 +196,7 @@ class HabitatLight(LightEntity):
         """Turn off the light. 立即写状态并返回，网关在后台执行。"""
         old_state = self._state
         self._state = False
+        self._last_control_time = time.monotonic()
         self.async_write_ha_state()
         self.hass.async_create_task(self._send_turn_off_and_sync(old_state))
 
@@ -199,7 +207,7 @@ class HabitatLight(LightEntity):
             self._state = old_state
             self.async_write_ha_state()
             return
-        await self._refresh_and_write_state()
+        self.hass.async_call_later(4.0, lambda _: self.hass.async_create_task(self._refresh_and_write_state()))
 
     async def async_update(self) -> None:
         """Update the entity from coordinator data."""
