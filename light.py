@@ -3,20 +3,12 @@
 import logging
 from typing import Any
 
-from homeassistant.components.light import (
-    ATTR_COLOR_TEMP_KELVIN,
-    ColorMode,
-    LightEntity,
-)
+from homeassistant.components.light import ColorMode, LightEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.util.color import (
-    color_temperature_kelvin_to_mired,
-    color_temperature_mired_to_kelvin,
-)
 
 from .api import HabitatAPI
 from .const import DOMAIN, LIGHT_MODELS
@@ -80,8 +72,6 @@ class HabitatLight(LightEntity):
         self._device_data = device_data
         self._state = False
         self._brightness = 0
-        # 网关通常使用 mired 表示色温，内部保存 mired
-        self._color_temp_mired = 0
 
         self._update_state()
 
@@ -110,11 +100,6 @@ class HabitatLight(LightEntity):
                     self._brightness = max(0, min(255, val))
                 except (TypeError, ValueError):
                     self._brightness = 0
-            elif attr_name == "colorTemp":
-                try:
-                    self._color_temp_mired = int(float(raw)) if raw is not None else 0
-                except (TypeError, ValueError):
-                    self._color_temp_mired = 0
 
     @property
     def unique_id(self) -> str:
@@ -137,31 +122,14 @@ class HabitatLight(LightEntity):
         return self._brightness
 
     @property
-    def color_temp_kelvin(self) -> int | None:
-        """Return color temperature in Kelvin (gateway uses mired)."""
-        if self._color_temp_mired <= 0:
-            return None
-        return int(color_temperature_mired_to_kelvin(self._color_temp_mired))
-
-    @property
-    def min_color_temp_kelvin(self) -> int:
-        """Return minimum color temperature in Kelvin."""
-        return 2000
-
-    @property
-    def max_color_temp_kelvin(self) -> int:
-        """Return maximum color temperature in Kelvin."""
-        return 6500
-
-    @property
     def color_mode(self) -> ColorMode:
         """Return color mode."""
-        return ColorMode.COLOR_TEMP
+        return ColorMode.BRIGHTNESS
 
     @property
     def supported_color_modes(self):
-        """Return supported color modes. CCT light: COLOR_TEMP 已包含亮度调节，不可与 BRIGHTNESS 同时声明。"""
-        return {ColorMode.COLOR_TEMP}
+        """Return supported color modes. 仅开关+亮度，色温由设备侧控制。"""
+        return {ColorMode.BRIGHTNESS}
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -175,39 +143,29 @@ class HabitatLight(LightEntity):
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn on the light. 栖息地色温灯亮度与色温绑定，每次只下发一个量（优先亮度），另一量由设备联动。"""
-        state = 1
-        level_ha = kwargs.get("brightness")  # HA 0-255，网关亦为 0-255
-        color_temp_kelvin = kwargs.get(ATTR_COLOR_TEMP_KELVIN)
-        color_temp_mired = (
-            int(color_temperature_kelvin_to_mired(color_temp_kelvin))
-            if color_temp_kelvin is not None
-            else None
-        )
-        send_level = level_ha if level_ha is not None else None
-        send_color_temp = None
-        if color_temp_kelvin is not None:
-            send_color_temp = color_temp_mired
-        if level_ha is not None and color_temp_mired is not None:
-            send_color_temp = None  # 两样都传时只发亮度，色温由设备联动
+        """Turn on the light. 先乐观更新界面，再发网关，失败则回滚。"""
+        level_ha = kwargs.get("brightness")
+        # 先写状态再调 API，界面立即刷新，不依赖网关响应
+        old_state = self._state
+        old_brightness = self._brightness
+        self._state = True
+        if level_ha is not None:
+            self._brightness = level_ha
+        elif not self._brightness:
+            self._brightness = 255
+        self.async_write_ha_state()
         success = await self._get_api().set_light(
             self._device_uid,
-            state=state,
-            level=send_level,
-            color_temp=send_color_temp,
+            state=1,
+            level=level_ha if level_ha is not None else None,
+            color_temp=None,
         )
-        if success:
-            # 先乐观更新并立即写状态，使界面 1 秒内更新；刷新放到后台，不阻塞返回
-            self._state = True
-            if level_ha is not None:
-                self._brightness = level_ha
-            elif not self._brightness:
-                self._brightness = 255
-            if color_temp_mired is not None:
-                self._color_temp_mired = color_temp_mired
+        if not success:
+            self._state = old_state
+            self._brightness = old_brightness
             self.async_write_ha_state()
-            # 后台拉取网关数据并同步一次，不 await，避免前端等 10~30s 才刷新
-            self.hass.async_create_task(self._refresh_and_write_state())
+            return
+        self.hass.async_create_task(self._refresh_and_write_state())
 
     async def _refresh_and_write_state(self) -> None:
         """后台从 coordinator 拉取最新设备数据并更新实体状态（用于控制后与网关同步）。"""
@@ -220,12 +178,16 @@ class HabitatLight(LightEntity):
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn off the light."""
+        """Turn off the light. 先乐观更新界面，再发网关。"""
+        old_state = self._state
+        self._state = False
+        self.async_write_ha_state()
         success = await self._get_api().set_light(self._device_uid, state=0)
-        if success:
-            self._state = False
+        if not success:
+            self._state = old_state
             self.async_write_ha_state()
-            self.hass.async_create_task(self._refresh_and_write_state())
+            return
+        self.hass.async_create_task(self._refresh_and_write_state())
 
     async def async_update(self) -> None:
         """Update the entity from coordinator data."""
