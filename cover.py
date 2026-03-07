@@ -69,34 +69,28 @@ class HabitatCover(CoverEntity):
         self._device_uid = device_uid
         self._name = name
         self._device_data = device_data
-        self._state = 2  # 网关: 0=open, 1=closing, 2=closed
-        self._level = 0  # 内部 0-255：0=关 255=开
-        self._attr_device_class = CoverDeviceClass.CURTAIN  # 平开帘，非卷帘
+        self._level = 0  # 仅用 curtainLevel：0-255，0=关 255=开（不依赖 curtainState/curtainDir）
+        self._attr_device_class = CoverDeviceClass.CURTAIN  # 平开帘
 
         self._update_state()
 
     def _update_state(self):
-        """Update state from device data. 网关可能返回 0-255 或 0-100，或字符串。"""
+        """仅从 curtainLevel 更新；curtainState、curtainDir 实测常为 2/0 且无需关注。"""
         dev_attrs = self._device_data.get("dev_attrs", [])
         for attr in dev_attrs:
-            attr_name = attr.get("name")
-            if attr_name == "curtainState":
-                raw = attr.get("value")
-                try:
-                    self._state = int(raw) if raw is not None else self._state
-                except (TypeError, ValueError):
-                    pass
-            elif attr_name == "curtainLevel":
-                raw = attr.get("value") or attr.get("valueStr")
-                if raw is None:
-                    continue
-                try:
-                    level = int(float(raw))
-                    if 0 <= level <= 100:
-                        level = int((level / 100) * 255)
-                    self._level = max(0, min(255, level))
-                except (TypeError, ValueError):
-                    pass
+            if attr.get("name") != "curtainLevel":
+                continue
+            raw = attr.get("value") or attr.get("valueStr")
+            if raw is None:
+                continue
+            try:
+                level = int(float(raw))
+                if 0 <= level <= 100:
+                    level = int((level / 100) * 255)
+                self._level = max(0, min(255, level))
+            except (TypeError, ValueError):
+                pass
+            break
 
     @property
     def unique_id(self) -> str:
@@ -139,38 +133,44 @@ class HabitatCover(CoverEntity):
             via_device=(DOMAIN, self._gateway_identifier),
         )
 
+    async def _refresh_from_gateway(self) -> None:
+        """从网关拉取最新设备数据并更新本实体的 level，保证界面显示与网关一致。"""
+        await self._coordinator.async_request_refresh()
+        for device in self._coordinator.data or []:
+            if device.get("deviceUid") == self._device_uid:
+                self._device_data = device
+                self._update_state()
+                break
+
     async def async_open_cover(self, **kwargs: Any) -> None:
-        """Open the cover. 电机方向与 HA 一致：开 → 发 level=255（网关关方向即物理开）。"""
-        success = await self._api.set_cover(self._device_uid, state=1, level=255)
+        """开帘：仅下发 curtainLevel=255。"""
+        success = await self._api.set_cover(self._device_uid, level=255)
         if success:
-            self._state = 2
-            self._level = 255
+            await self._refresh_from_gateway()
             self.async_write_ha_state()
 
     async def async_close_cover(self, **kwargs: Any) -> None:
-        """Close the cover. 电机方向与 HA 一致：关 → 发 level=0（网关开方向即物理关）。"""
-        success = await self._api.set_cover(self._device_uid, state=0, level=0)
+        """关帘：仅下发 curtainLevel=0。"""
+        success = await self._api.set_cover(self._device_uid, level=0)
         if success:
-            self._state = 0
-            self._level = 0
+            await self._refresh_from_gateway()
             self.async_write_ha_state()
 
     async def async_stop_cover(self, **kwargs: Any) -> None:
-        """Stop the cover."""
-        # state 2 = stop
-        success = await self._api.set_cover(self._device_uid, state=2)
+        """停止：下发当前 level 以保持位置（仅用 curtainLevel 时无单独 stop 命令）。"""
+        success = await self._api.set_cover(self._device_uid, level=self._level)
         if success:
+            await self._refresh_from_gateway()
             self.async_write_ha_state()
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
-        """Move cover to a specific position. HA: 0=closed, 100=open；网关 level 0=关 255=开。"""
+        """设定开合度：仅下发 curtainLevel。HA 0=关 100=开 → level 0-255。"""
         position = kwargs.get("position", 0)
         level = int((position / 100) * 255)
         level = max(0, min(255, level))
         success = await self._api.set_cover(self._device_uid, level=level)
         if success:
-            self._level = level
-            self._state = 1 if level not in (0, 255) else (0 if level == 0 else 2)
+            await self._refresh_from_gateway()
             self.async_write_ha_state()
 
     async def async_update(self) -> None:
