@@ -143,9 +143,8 @@ class HabitatLight(LightEntity):
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn on the light. 先乐观更新界面，再发网关，失败则回滚。"""
+        """Turn on the light. 立即写状态并返回，网关请求在后台执行，避免前端等半分钟才刷新开关。"""
         level_ha = kwargs.get("brightness")
-        # 先写状态再调 API，界面立即刷新，不依赖网关响应
         old_state = self._state
         old_brightness = self._brightness
         self._state = True
@@ -154,10 +153,19 @@ class HabitatLight(LightEntity):
         elif not self._brightness:
             self._brightness = 255
         self.async_write_ha_state()
+        # 不 await 网关，使服务调用立即返回，前端即可刷新开关；网关在后台执行，失败则回滚
+        self.hass.async_create_task(
+            self._send_turn_on_and_sync(level_ha, old_state, old_brightness)
+        )
+
+    async def _send_turn_on_and_sync(
+        self, level_ha: int | None, old_state: bool, old_brightness: int
+    ) -> None:
+        """后台：发开灯指令，失败回滚，成功则拉取网关状态同步。"""
         success = await self._get_api().set_light(
             self._device_uid,
             state=1,
-            level=level_ha if level_ha is not None else None,
+            level=level_ha,
             color_temp=None,
         )
         if not success:
@@ -165,7 +173,7 @@ class HabitatLight(LightEntity):
             self._brightness = old_brightness
             self.async_write_ha_state()
             return
-        self.hass.async_create_task(self._refresh_and_write_state())
+        await self._refresh_and_write_state()
 
     async def _refresh_and_write_state(self) -> None:
         """后台从 coordinator 拉取最新设备数据并更新实体状态（用于控制后与网关同步）。"""
@@ -178,16 +186,20 @@ class HabitatLight(LightEntity):
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn off the light. 先乐观更新界面，再发网关。"""
+        """Turn off the light. 立即写状态并返回，网关在后台执行。"""
         old_state = self._state
         self._state = False
         self.async_write_ha_state()
+        self.hass.async_create_task(self._send_turn_off_and_sync(old_state))
+
+    async def _send_turn_off_and_sync(self, old_state: bool) -> None:
+        """后台：发关灯指令，失败回滚，成功则拉取网关状态同步。"""
         success = await self._get_api().set_light(self._device_uid, state=0)
         if not success:
             self._state = old_state
             self.async_write_ha_state()
             return
-        self.hass.async_create_task(self._refresh_and_write_state())
+        await self._refresh_and_write_state()
 
     async def async_update(self) -> None:
         """Update the entity from coordinator data."""
