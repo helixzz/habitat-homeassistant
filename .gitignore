@@ -1,0 +1,4 @@
+# Test / local
+devices_sample.json
+__pycache__/
+*.py[cod]

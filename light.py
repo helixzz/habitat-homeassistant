@@ -14,12 +14,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+
 from .api import HabitatAPI
-from .const import DOMAIN
+from .const import DOMAIN, LIGHT_MODELS
 
 _LOGGER = logging.getLogger(__name__)
-
-DEVICE_TYPE_CCT = "ZBW4CGJ"
 
 
 async def async_setup_entry(
@@ -28,35 +28,45 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up lights from a config entry."""
-    api: HabitatAPI = hass.data[DOMAIN][config_entry.entry_id]
-    devices = api.get_devices()
-    
+    data = hass.data[DOMAIN][config_entry.entry_id]
+    api: HabitatAPI = data["api"]
+    coordinator: DataUpdateCoordinator = data["coordinator"]
+    gateway_device_id: str = data["gateway_device_id"]
+    devices = coordinator.data or []
+
     lights = []
     for device in devices:
         model = device.get("model", "")
         device_uid = device.get("deviceUid", "")
         online = device.get("online", False)
-        
-        if model == DEVICE_TYPE_CCT and online:
-            # Get device name from attrs
+
+        if model in LIGHT_MODELS and online:
             dev_attrs = device.get("dev_attrs", [])
             name = device_uid
             for attr in dev_attrs:
                 if attr.get("name") == "devName":
                     name = attr.get("value", device_uid)
                     break
-            
-            lights.append(HabitatLight(api, device_uid, name, device))
-    
+            lights.append(HabitatLight(api, coordinator, gateway_device_id, device_uid, name, device))
     async_add_entities(lights)
 
 
 class HabitatLight(LightEntity):
     """Representation of a Habitat light."""
 
-    def __init__(self, api: HabitatAPI, device_uid: str, name: str, device_data: dict):
+    def __init__(
+        self,
+        api: HabitatAPI,
+        coordinator: DataUpdateCoordinator,
+        gateway_device_id: str,
+        device_uid: str,
+        name: str,
+        device_data: dict,
+    ):
         """Initialize the light."""
         self._api = api
+        self._coordinator = coordinator
+        self._gateway_device_id = gateway_device_id
         self._device_uid = device_uid
         self._name = name
         self._device_data = device_data
@@ -124,7 +134,7 @@ class HabitatLight(LightEntity):
             name=self._name,
             manufacturer="栖息地",
             model="色温灯",
-            via_device=(DOMAIN, self._device_uid),
+            via_device=(DOMAIN, self._gateway_device_id),
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -133,7 +143,7 @@ class HabitatLight(LightEntity):
         level = kwargs.get(ATTR_BRIGHTNESS)
         color_temp = kwargs.get(ATTR_COLOR_TEMP)
         
-        success = self._api.set_light(
+        success = await self._api.set_light(
             self._device_uid,
             state=state,
             level=level,
@@ -150,16 +160,15 @@ class HabitatLight(LightEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the light."""
-        success = self._api.set_light(self._device_uid, state=0)
+        success = await self._api.set_light(self._device_uid, state=0)
         
         if success:
             self._state = False
             self.async_write_ha_state()
 
     async def async_update(self) -> None:
-        """Update the entity."""
-        devices = self._api.get_devices()
-        for device in devices:
+        """Update the entity from coordinator data."""
+        for device in self._coordinator.data or []:
             if device.get("deviceUid") == self._device_uid:
                 self._device_data = device
                 self._update_state()
