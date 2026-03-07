@@ -1,5 +1,6 @@
 """Cover platform for 栖息地智能家庭 (curtains)."""
 
+import asyncio
 import logging
 from typing import Any
 
@@ -69,8 +70,9 @@ class HabitatCover(CoverEntity):
         self._device_uid = device_uid
         self._name = name
         self._device_data = device_data
-        self._level = 0  # 仅用 curtainLevel：0-255，0=关 255=开（不依赖 curtainState/curtainDir）
+        self._level = 0  # 仅用 curtainLevel：0-255，0=关 255=开
         self._attr_device_class = CoverDeviceClass.CURTAIN  # 平开帘
+        self._polling_task: asyncio.Task | None = None  # 控制后的短期轮询任务
 
         self._update_state()
 
@@ -134,7 +136,7 @@ class HabitatCover(CoverEntity):
         )
 
     async def _refresh_from_gateway(self) -> None:
-        """从网关拉取最新设备数据并更新本实体的 level，保证界面显示与网关一致。"""
+        """从网关拉取最新设备数据并更新本实体的 level。"""
         await self._coordinator.async_request_refresh()
         for device in self._coordinator.data or []:
             if device.get("deviceUid") == self._device_uid:
@@ -142,36 +144,55 @@ class HabitatCover(CoverEntity):
                 self._update_state()
                 break
 
+    def _start_position_polling(self) -> None:
+        """控制后启动短期轮询（约 30 秒内每 0.5 秒从网关拉一次），使界面跟上窗帘实际开度。"""
+        if self._polling_task is not None:
+            self._polling_task.cancel()
+        async def _poll_loop() -> None:
+            try:
+                for _ in range(60):
+                    await asyncio.sleep(0.5)
+                    await self._refresh_from_gateway()
+                    self.async_write_ha_state()
+            except asyncio.CancelledError:
+                pass
+            finally:
+                self._polling_task = None
+        self._polling_task = self.hass.async_create_task(_poll_loop())
+
     async def async_open_cover(self, **kwargs: Any) -> None:
-        """开帘：仅下发 curtainLevel=255。"""
+        """开帘：仅下发 curtainLevel=255；先乐观更新显示，再轮询网关跟上实际。"""
         success = await self._api.set_cover(self._device_uid, level=255)
         if success:
-            await self._refresh_from_gateway()
+            self._level = 255
             self.async_write_ha_state()
+            self._start_position_polling()
 
     async def async_close_cover(self, **kwargs: Any) -> None:
-        """关帘：仅下发 curtainLevel=0。"""
+        """关帘：仅下发 curtainLevel=0；先乐观更新显示，再轮询网关跟上实际。"""
         success = await self._api.set_cover(self._device_uid, level=0)
         if success:
-            await self._refresh_from_gateway()
+            self._level = 0
             self.async_write_ha_state()
+            self._start_position_polling()
 
     async def async_stop_cover(self, **kwargs: Any) -> None:
-        """停止：下发当前 level 以保持位置（仅用 curtainLevel 时无单独 stop 命令）。"""
+        """停止：下发当前 level；拉一次网关更新显示。"""
         success = await self._api.set_cover(self._device_uid, level=self._level)
         if success:
             await self._refresh_from_gateway()
             self.async_write_ha_state()
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
-        """设定开合度：仅下发 curtainLevel。HA 0=关 100=开 → level 0-255。"""
+        """设定开合度：先乐观更新到目标%，再轮询网关使显示跟上实际运动。"""
         position = kwargs.get("position", 0)
         level = int((position / 100) * 255)
         level = max(0, min(255, level))
         success = await self._api.set_cover(self._device_uid, level=level)
         if success:
-            await self._refresh_from_gateway()
+            self._level = level
             self.async_write_ha_state()
+            self._start_position_polling()
 
     async def async_update(self) -> None:
         """Update the entity from coordinator data."""
