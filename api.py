@@ -1,26 +1,49 @@
 """API for 栖息地智能家庭 gateway."""
 
 import logging
-import urllib.request
-import json
+
+import aiohttp
 
 _LOGGER = logging.getLogger(__name__)
+
+DEFAULT_TIMEOUT = aiohttp.ClientTimeout(total=10)
+
+
+class HabitatAPIError(Exception):
+    """Raised when gateway returns a business error (e.g. auth failure)."""
+    def __init__(self, message: str, code: int = None):
+        self.code = code
+        super().__init__(message)
 
 
 class HabitatAPI:
     """Client for interacting with Habitat gateway."""
 
-    def __init__(self, host: str, access_id: str, key: str, uid: str, pwd: str):
+    def __init__(
+        self,
+        host: str,
+        access_id: str,
+        key: str,
+        uid: str,
+        pwd: str,
+        port: int = 80,
+    ):
         """Initialize API client."""
         self.host = host
+        self.port = port
         self.access_id = access_id
         self.key = key
         self.uid = uid
         self.pwd = pwd
-        self.base_url = f"http://{host}"
+        if port == 80:
+            self.base_url = f"http://{host}"
+        else:
+            self.base_url = f"http://{host}:{port}"
 
-    def _request(self, endpoint: str, params: dict) -> dict:
-        """Make request to gateway."""
+    async def _request(self, endpoint: str, params: dict) -> dict:
+        """Make request to gateway. Returns dict with 'code' and optional 'params'/'message'.
+        On network/timeout errors returns {'code': 500, 'message': str}.
+        On gateway business error returns response as-is (code != 200)."""
         url = f"{self.base_url}{endpoint}"
         data = {
             "accessID": self.access_id,
@@ -30,70 +53,95 @@ class HabitatAPI:
             "pwd": self.pwd,
             **params
         }
-        
-        _LOGGER.debug(f"Request to {url}: {data}")
-        
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(data).encode('utf-8'),
-            headers={'Content-Type': 'application/json'}
-        )
-        
+        _LOGGER.debug("Request to %s: %s", url, data)
         try:
-            with urllib.request.urlopen(req, timeout=10) as response:
-                result = json.loads(response.read().decode('utf-8'))
-                _LOGGER.debug(f"Response: {result}")
-                return result
+            async with aiohttp.ClientSession(timeout=DEFAULT_TIMEOUT) as session:
+                async with session.post(
+                    url, json=data, headers={"Content-Type": "application/json"}
+                ) as response:
+                    result = await response.json()
+                    _LOGGER.debug("Response: %s", result)
+                    return result
+        except aiohttp.ClientError as e:
+            _LOGGER.error("API request failed (network): %s", e)
+            return {"code": 500, "message": "无法连接到网关，请检查网络和地址"}
+        except TimeoutError as e:
+            _LOGGER.error("API request timeout: %s", e)
+            return {"code": 500, "message": "连接超时，请检查网络"}
         except Exception as e:
-            _LOGGER.error(f"API request failed: {e}")
-            return {"code": 500, "status": str(e)}
+            _LOGGER.exception("Unexpected error")
+            return {"code": 500, "message": str(e)}
 
-    def get_devices(self) -> list:
-        """Get all devices from gateway."""
-        result = self._request("/gateway/getgatewaydevice", {})
-        
-        if result.get("code") == 200:
-            return result.get("params", {}).get("devices", [])
-        return []
+    async def get_devices(self) -> list:
+        """Get all devices from gateway. Raises HabitatAPIError on auth/business error."""
+        result = await self._request("/gateway/getgatewaydevice", {})
+        code = result.get("code")
+        if code == 200:
+            devices = result.get("params", {}).get("devices", [])
+            return devices if devices is not None else []
+        if code == 500:
+            raise ConnectionError(result.get("message", "无法连接到网关"))
+        raise HabitatAPIError(
+            result.get("message", "认证失败，请检查 UID、Key 和密码"),
+            code=code,
+        )
 
-    def set_device_attribute(self, device_uid: str, attr_name: str, value) -> bool:
-        """Set device attribute."""
+    async def set_device_attribute(
+        self, device_uid: str, attr_name: str, value
+    ) -> bool:
+        """Set device attribute. Gateway expects device payload under top-level 'params'."""
         params = {
-            "childGatewayId": self.uid,
-            "deviceUid": device_uid,
-            "dev_attr": {
-                "name": attr_name,
-                "value": value
+            "params": {
+                "childGatewayId": self.uid,
+                "deviceUid": device_uid,
+                "dev_attr": {"name": attr_name, "value": value},
             }
         }
-        
-        result = self._request("/gateway/setDeviceAttribute", params)
+        result = await self._request("/gateway/setDeviceAttribute", params)
         return result.get("code") == 200
 
-    def set_light(self, device_uid: str, state: int, level: int = None, color_temp: int = None) -> bool:
+    async def set_light(
+        self,
+        device_uid: str,
+        state: int = None,
+        level: int = None,
+        color_temp: int = None,
+    ) -> bool:
         """Control light device."""
         if state is not None:
-            if not self.set_device_attribute(device_uid, "state", state):
+            if not await self.set_device_attribute(device_uid, "state", state):
                 return False
         if level is not None:
-            if not self.set_device_attribute(device_uid, "level", level):
+            if not await self.set_device_attribute(device_uid, "level", level):
                 return False
         if color_temp is not None:
-            if not self.set_device_attribute(device_uid, "colorTemp", color_temp):
+            if not await self.set_device_attribute(
+                device_uid, "colorTemp", color_temp
+            ):
                 return False
         return True
 
-    def set_switch(self, device_uid: str, state: int, switch_index: int = 0) -> bool:
+    async def set_switch(
+        self, device_uid: str, state: int, switch_index: int = 0
+    ) -> bool:
         """Control switch device."""
-        attr_name = f"state{switch_index}" if switch_index > 0 else "state0"
-        return self.set_device_attribute(device_uid, attr_name, state)
+        attr_name = (
+            f"state{switch_index}" if switch_index > 0 else "state0"
+        )
+        return await self.set_device_attribute(device_uid, attr_name, state)
 
-    def set_cover(self, device_uid: str, state: int = None, level: int = None) -> bool:
+    async def set_cover(
+        self, device_uid: str, state: int = None, level: int = None
+    ) -> bool:
         """Control cover (curtain) device."""
         if state is not None:
-            if not self.set_device_attribute(device_uid, "curtainState", state):
+            if not await self.set_device_attribute(
+                device_uid, "curtainState", state
+            ):
                 return False
         if level is not None:
-            if not self.set_device_attribute(device_uid, "curtainLevel", level):
+            if not await self.set_device_attribute(
+                device_uid, "curtainLevel", level
+            ):
                 return False
         return True

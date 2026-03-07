@@ -9,13 +9,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+
 from .api import HabitatAPI
-from .const import DOMAIN
+from .const import DOMAIN, SWITCH_MODELS
 
 _LOGGER = logging.getLogger(__name__)
-
-# Switch models
-SWITCH_MODELS = ["ZSW5BGJ", "ZSW5GGJ", "ZWN04GJ", "CUN01GJ", "8DO"]
 
 
 async def async_setup_entry(
@@ -24,9 +23,12 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up switches from a config entry."""
-    api: HabitatAPI = hass.data[DOMAIN][config_entry.entry_id]
-    devices = api.get_devices()
-    
+    data = hass.data[DOMAIN][config_entry.entry_id]
+    api: HabitatAPI = data["api"]
+    coordinator: DataUpdateCoordinator = data["coordinator"]
+    gateway_device_id: str = data["gateway_device_id"]
+    devices = coordinator.data or []
+
     switches = []
     for device in devices:
         model = device.get("model", "")
@@ -53,14 +55,13 @@ async def async_setup_entry(
                         pass
             
             if switch_count > 1:
-                # Multi-button switch: create entity for each button
                 for i in range(switch_count):
                     switch_name = f"{name} {i+1}" if switch_count > 1 else name
                     switches.append(
-                        HabitatSwitch(api, device_uid, switch_name, device, i)
+                        HabitatSwitch(api, coordinator, gateway_device_id, device_uid, switch_name, device, i)
                     )
             else:
-                switches.append(HabitatSwitch(api, device_uid, name, device, 0))
+                switches.append(HabitatSwitch(api, coordinator, gateway_device_id, device_uid, name, device, 0))
     
     async_add_entities(switches)
 
@@ -68,9 +69,20 @@ async def async_setup_entry(
 class HabitatSwitch(SwitchEntity):
     """Representation of a Habitat switch."""
 
-    def __init__(self, api: HabitatAPI, device_uid: str, name: str, device_data: dict, switch_index: int):
+    def __init__(
+        self,
+        api: HabitatAPI,
+        coordinator: DataUpdateCoordinator,
+        gateway_device_id: str,
+        device_uid: str,
+        name: str,
+        device_data: dict,
+        switch_index: int,
+    ):
         """Initialize the switch."""
         self._api = api
+        self._coordinator = coordinator
+        self._gateway_device_id = gateway_device_id
         self._device_uid = device_uid
         self._name = name
         self._device_data = device_data
@@ -107,18 +119,18 @@ class HabitatSwitch(SwitchEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return device info."""
+        """Return device info. All channels share same physical device."""
         return DeviceInfo(
-            identifiers={(DOMAIN, f"{self._device_uid}_{self._switch_index}")},
-            name=self._name,
+            identifiers={(DOMAIN, self._device_uid)},
+            name=self._name.rsplit(" ", 1)[0] if " " in self._name else self._name,
             manufacturer="栖息地",
             model="智能开关",
-            via_device=(DOMAIN, self._device_uid),
+            via_device=(DOMAIN, self._gateway_device_id),
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the switch."""
-        success = self._api.set_switch(self._device_uid, 1, self._switch_index)
+        success = await self._api.set_switch(self._device_uid, 1, self._switch_index)
         
         if success:
             self._state = True
@@ -126,16 +138,15 @@ class HabitatSwitch(SwitchEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the switch."""
-        success = self._api.set_switch(self._device_uid, 0, self._switch_index)
+        success = await self._api.set_switch(self._device_uid, 0, self._switch_index)
         
         if success:
             self._state = False
             self.async_write_ha_state()
 
     async def async_update(self) -> None:
-        """Update the entity."""
-        devices = self._api.get_devices()
-        for device in devices:
+        """Update the entity from coordinator data."""
+        for device in self._coordinator.data or []:
             if device.get("deviceUid") == self._device_uid:
                 self._device_data = device
                 self._update_state()
