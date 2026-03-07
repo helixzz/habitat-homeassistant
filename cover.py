@@ -29,13 +29,15 @@ async def async_setup_entry(
 ) -> None:
     """Set up covers from a config entry."""
     data = hass.data[DOMAIN][config_entry.entry_id]
-    api: HabitatAPI = data["api"]
+    apis_by_uid: dict = data.get("apis_by_uid") or {}
+    primary_uid = data.get("primary_uid", "")
+    default_api: HabitatAPI = data["api"]
     coordinator: DataUpdateCoordinator = data["coordinator"]
     gateway_identifier: str = data["gateway_identifier"]
     devices = coordinator.data or []
 
     inverted_uids = set(
-        config_entry.options.get("inverted_cover_uids") or []
+        (config_entry.options or {}).get("inverted_cover_uids") or []
     )
     covers = []
     for device in devices:
@@ -51,7 +53,7 @@ async def async_setup_entry(
                     name = attr.get("value", device_uid)
                     break
             inverted = device_uid in inverted_uids
-            covers.append(HabitatCover(api, coordinator, gateway_identifier, device_uid, name, device, inverted))
+            covers.append(HabitatCover(apis_by_uid, primary_uid, default_api, coordinator, gateway_identifier, device_uid, name, device, inverted))
     async_add_entities(covers)
 
 
@@ -60,7 +62,9 @@ class HabitatCover(CoverEntity):
 
     def __init__(
         self,
-        api: HabitatAPI,
+        apis_by_uid: dict,
+        primary_uid: str,
+        default_api: HabitatAPI,
         coordinator: DataUpdateCoordinator,
         gateway_identifier: str,
         device_uid: str,
@@ -68,8 +72,10 @@ class HabitatCover(CoverEntity):
         device_data: dict,
         inverted: bool = False,
     ):
-        """Initialize the cover. inverted=True 时 HA 开=物理关、HA 关=物理开。"""
-        self._api = api
+        """Initialize the cover. 控制时按设备当前所属网关(childGatewayId)选 API，设备迁移后无需重载。inverted=True 时 HA 开=物理关、HA 关=物理开。"""
+        self._apis_by_uid = apis_by_uid or {}
+        self._primary_uid = primary_uid
+        self._default_api = default_api
         self._coordinator = coordinator
         self._gateway_identifier = gateway_identifier
         self._device_uid = device_uid
@@ -91,6 +97,14 @@ class HabitatCover(CoverEntity):
         """HA 显示 level -> 发往网关的 level。"""
         display_level = max(0, min(255, display_level))
         return (255 - display_level) if self._inverted else display_level
+
+    def _get_api(self) -> HabitatAPI:
+        """按设备当前所属网关解析 API，设备在网关间迁移后无需重载集成。"""
+        for device in self._coordinator.data or []:
+            if device.get("deviceUid") == self._device_uid:
+                child_uid = device.get("childGatewayId") or self._primary_uid
+                return self._apis_by_uid.get(child_uid) or self._apis_by_uid.get(self._primary_uid) or self._default_api
+        return self._apis_by_uid.get(self._primary_uid) or self._default_api
 
     def _update_state(self):
         """仅从 curtainLevel 更新；反向时 0/255 对调。"""
@@ -179,7 +193,7 @@ class HabitatCover(CoverEntity):
     async def async_open_cover(self, **kwargs: Any) -> None:
         """开帘：HA 开 → 发 gateway level（反向时发 0）。"""
         gw = self._display_to_gateway_level(255)
-        success = await self._api.set_cover(self._device_uid, level=gw)
+        success = await self._get_api().set_cover(self._device_uid, level=gw)
         if success:
             self._level = 255
             self.async_write_ha_state()
@@ -188,7 +202,7 @@ class HabitatCover(CoverEntity):
     async def async_close_cover(self, **kwargs: Any) -> None:
         """关帘：HA 关 → 发 gateway level（反向时发 255）。"""
         gw = self._display_to_gateway_level(0)
-        success = await self._api.set_cover(self._device_uid, level=gw)
+        success = await self._get_api().set_cover(self._device_uid, level=gw)
         if success:
             self._level = 0
             self.async_write_ha_state()
@@ -196,7 +210,7 @@ class HabitatCover(CoverEntity):
 
     async def async_stop_cover(self, **kwargs: Any) -> None:
         """停止：下发 curtainState=2（停止），网关据此停止电机。"""
-        success = await self._api.set_cover(self._device_uid, state=2)
+        success = await self._get_api().set_cover(self._device_uid, state=2)
         if success:
             await self._refresh_from_gateway()
             self.async_write_ha_state()
@@ -207,7 +221,7 @@ class HabitatCover(CoverEntity):
         display_level = int((position / 100) * 255)
         display_level = max(0, min(255, display_level))
         gw = self._display_to_gateway_level(display_level)
-        success = await self._api.set_cover(self._device_uid, level=gw)
+        success = await self._get_api().set_cover(self._device_uid, level=gw)
         if success:
             self._level = display_level
             self.async_write_ha_state()

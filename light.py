@@ -31,7 +31,9 @@ async def async_setup_entry(
 ) -> None:
     """Set up lights from a config entry."""
     data = hass.data[DOMAIN][config_entry.entry_id]
-    api: HabitatAPI = data["api"]
+    apis_by_uid = data.get("apis_by_uid") or {}
+    primary_uid = data.get("primary_uid", "")
+    default_api: HabitatAPI = data["api"]
     coordinator: DataUpdateCoordinator = data["coordinator"]
     gateway_identifier: str = data["gateway_identifier"]
     devices = coordinator.data or []
@@ -49,7 +51,7 @@ async def async_setup_entry(
                 if attr.get("name") == "devName":
                     name = attr.get("value", device_uid)
                     break
-            lights.append(HabitatLight(api, coordinator, gateway_identifier, device_uid, name, device))
+            lights.append(HabitatLight(apis_by_uid, primary_uid, default_api, coordinator, gateway_identifier, device_uid, name, device))
     async_add_entities(lights)
 
 
@@ -58,15 +60,19 @@ class HabitatLight(LightEntity):
 
     def __init__(
         self,
-        api: HabitatAPI,
+        apis_by_uid: dict,
+        primary_uid: str,
+        default_api: HabitatAPI,
         coordinator: DataUpdateCoordinator,
         gateway_identifier: str,
         device_uid: str,
         name: str,
         device_data: dict,
     ):
-        """Initialize the light."""
-        self._api = api
+        """Initialize the light. 控制时按设备当前所属网关(childGatewayId)选 API。"""
+        self._apis_by_uid = apis_by_uid or {}
+        self._primary_uid = primary_uid
+        self._default_api = default_api
         self._coordinator = coordinator
         self._gateway_identifier = gateway_identifier
         self._device_uid = device_uid
@@ -75,9 +81,17 @@ class HabitatLight(LightEntity):
         self._state = False
         self._brightness = 0
         # 网关通常使用 mired 表示色温，内部保存 mired
-        self._color_temp_mired = 0
+            self._color_temp_mired = 0
 
         self._update_state()
+
+    def _get_api(self) -> HabitatAPI:
+        """按设备当前所属网关解析 API，设备在网关间迁移后无需重载集成。"""
+        for device in self._coordinator.data or []:
+            if device.get("deviceUid") == self._device_uid:
+                child_uid = device.get("childGatewayId") or self._primary_uid
+                return self._apis_by_uid.get(child_uid) or self._apis_by_uid.get(self._primary_uid) or self._default_api
+        return self._apis_by_uid.get(self._primary_uid) or self._default_api
 
     def _update_state(self):
         """Update state from device data."""
@@ -173,7 +187,7 @@ class HabitatLight(LightEntity):
             send_color_temp = color_temp_mired
         if level is not None and color_temp_mired is not None:
             send_color_temp = None  # 两样都传时只发亮度，色温由设备联动
-        success = await self._api.set_light(
+        success = await self._get_api().set_light(
             self._device_uid,
             state=state,
             level=send_level,
@@ -191,7 +205,7 @@ class HabitatLight(LightEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the light."""
-        success = await self._api.set_light(self._device_uid, state=0)
+        success = await self._get_api().set_light(self._device_uid, state=0)
         if success:
             await self._coordinator.async_request_refresh()
             for device in self._coordinator.data or []:

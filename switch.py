@@ -46,7 +46,9 @@ async def async_setup_entry(
 ) -> None:
     """Set up switches from a config entry."""
     data = hass.data[DOMAIN][config_entry.entry_id]
-    api: HabitatAPI = data["api"]
+    apis_by_uid = data.get("apis_by_uid") or {}
+    primary_uid = data.get("primary_uid", "")
+    default_api: HabitatAPI = data["api"]
     coordinator: DataUpdateCoordinator = data["coordinator"]
     gateway_identifier: str = data["gateway_identifier"]
     devices = coordinator.data or []
@@ -81,10 +83,10 @@ async def async_setup_entry(
                     channel_label = _channel_label_for_switch(dev_attrs, model, i)
                     switch_name = f"{name} {channel_label}"
                     switches.append(
-                        HabitatSwitch(api, coordinator, gateway_identifier, device_uid, switch_name, device, i)
+                        HabitatSwitch(apis_by_uid, primary_uid, default_api, coordinator, gateway_identifier, device_uid, switch_name, device, i)
                     )
             else:
-                switches.append(HabitatSwitch(api, coordinator, gateway_identifier, device_uid, name, device, 0))
+                switches.append(HabitatSwitch(apis_by_uid, primary_uid, default_api, coordinator, gateway_identifier, device_uid, name, device, 0))
     
     async_add_entities(switches)
 
@@ -94,7 +96,9 @@ class HabitatSwitch(SwitchEntity):
 
     def __init__(
         self,
-        api: HabitatAPI,
+        apis_by_uid: dict,
+        primary_uid: str,
+        default_api: HabitatAPI,
         coordinator: DataUpdateCoordinator,
         gateway_identifier: str,
         device_uid: str,
@@ -102,8 +106,10 @@ class HabitatSwitch(SwitchEntity):
         device_data: dict,
         switch_index: int,
     ):
-        """Initialize the switch."""
-        self._api = api
+        """Initialize the switch. 控制时按设备当前所属网关(childGatewayId)选 API。"""
+        self._apis_by_uid = apis_by_uid or {}
+        self._primary_uid = primary_uid
+        self._default_api = default_api
         self._coordinator = coordinator
         self._gateway_identifier = gateway_identifier
         self._device_uid = device_uid
@@ -124,6 +130,14 @@ class HabitatSwitch(SwitchEntity):
             if attr.get("name") == attr_name:
                 self._state = bool(attr.get("value", 0))
                 break
+
+    def _get_api(self) -> HabitatAPI:
+        """按设备当前所属网关解析 API，设备在网关间迁移后无需重载集成。"""
+        for device in self._coordinator.data or []:
+            if device.get("deviceUid") == self._device_uid:
+                child_uid = device.get("childGatewayId") or self._primary_uid
+                return self._apis_by_uid.get(child_uid) or self._apis_by_uid.get(self._primary_uid) or self._default_api
+        return self._apis_by_uid.get(self._primary_uid) or self._default_api
 
     @property
     def unique_id(self) -> str:
@@ -153,7 +167,7 @@ class HabitatSwitch(SwitchEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the switch."""
-        success = await self._api.set_switch(self._device_uid, 1, self._switch_index)
+        success = await self._get_api().set_switch(self._device_uid, 1, self._switch_index)
         
         if success:
             self._state = True
@@ -161,7 +175,7 @@ class HabitatSwitch(SwitchEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the switch."""
-        success = await self._api.set_switch(self._device_uid, 0, self._switch_index)
+        success = await self._get_api().set_switch(self._device_uid, 0, self._switch_index)
         
         if success:
             self._state = False

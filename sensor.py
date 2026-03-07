@@ -28,7 +28,9 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensors from a config entry."""
     data = hass.data[DOMAIN][config_entry.entry_id]
-    api: HabitatAPI = data["api"]
+    apis_by_uid = data.get("apis_by_uid") or {}
+    primary_uid = data.get("primary_uid", "")
+    default_api: HabitatAPI = data["api"]
     coordinator: DataUpdateCoordinator = data["coordinator"]
     gateway_identifier: str = data["gateway_identifier"]
     devices = coordinator.data or []
@@ -38,7 +40,9 @@ async def async_setup_entry(
         model = device.get("model", "")
         device_uid = device.get("deviceUid", "")
         online = device.get("online", False)
-        
+        child_uid = device.get("childGatewayId") or primary_uid
+        api = apis_by_uid.get(child_uid) if apis_by_uid else default_api
+        api = api or apis_by_uid.get(primary_uid) or default_api
         dev_attrs = device.get("dev_attrs", [])
         
         # Get device name
