@@ -3,7 +3,11 @@
 import logging
 from typing import Any
 
-from homeassistant.components.cover import CoverEntity, CoverEntityFeature
+from homeassistant.components.cover import (
+    CoverDeviceClass,
+    CoverEntity,
+    CoverEntityFeature,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
@@ -66,20 +70,33 @@ class HabitatCover(CoverEntity):
         self._name = name
         self._device_data = device_data
         self._state = 2  # 网关: 0=open, 1=closing, 2=closed
-        self._level = 0  # 网关 0-255（与电机方向一致；集成内统一为：0=物理关闭, 255=物理打开）
+        self._level = 0  # 内部 0-255：0=关 255=开
+        self._attr_device_class = CoverDeviceClass.CURTAIN  # 平开帘，非卷帘
 
         self._update_state()
 
     def _update_state(self):
-        """Update state from device data."""
+        """Update state from device data. 网关可能返回 0-255 或 0-100，或字符串。"""
         dev_attrs = self._device_data.get("dev_attrs", [])
         for attr in dev_attrs:
             attr_name = attr.get("name")
-            attr_value = attr.get("value")
             if attr_name == "curtainState":
-                self._state = attr_value
+                raw = attr.get("value")
+                try:
+                    self._state = int(raw) if raw is not None else self._state
+                except (TypeError, ValueError):
+                    pass
             elif attr_name == "curtainLevel":
-                self._level = attr_value
+                raw = attr.get("value") or attr.get("valueStr")
+                if raw is None:
+                    continue
+                try:
+                    level = int(float(raw))
+                    if 0 <= level <= 100:
+                        level = int((level / 100) * 255)
+                    self._level = max(0, min(255, level))
+                except (TypeError, ValueError):
+                    pass
 
     @property
     def unique_id(self) -> str:
