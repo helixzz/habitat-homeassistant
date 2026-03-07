@@ -4,17 +4,20 @@ import logging
 from typing import Any
 
 from homeassistant.components.light import (
-    ATTR_BRIGHTNESS,
-    ATTR_COLOR_TEMP,
+    ATTR_COLOR_TEMP_KELVIN,
     ColorMode,
     LightEntity,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import ATTR_BRIGHTNESS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.util.color import (
+    color_temperature_kelvin_to_mired,
+    color_temperature_mired_to_kelvin,
+)
 
 from .api import HabitatAPI
 from .const import DOMAIN, LIGHT_MODELS
@@ -72,24 +75,23 @@ class HabitatLight(LightEntity):
         self._device_data = device_data
         self._state = False
         self._brightness = 0
-        self._color_temp = 0
-        
+        # 网关通常使用 mired 表示色温，内部保存 mired
+        self._color_temp_mired = 0
+
         self._update_state()
 
     def _update_state(self):
         """Update state from device data."""
         dev_attrs = self._device_data.get("dev_attrs", [])
-        
         for attr in dev_attrs:
             attr_name = attr.get("name")
             attr_value = attr.get("value")
-            
             if attr_name == "state":
                 self._state = bool(attr_value)
             elif attr_name == "level":
                 self._brightness = attr_value
             elif attr_name == "colorTemp":
-                self._color_temp = attr_value
+                self._color_temp_mired = int(attr_value) if attr_value is not None else 0
 
     @property
     def unique_id(self) -> str:
@@ -112,9 +114,21 @@ class HabitatLight(LightEntity):
         return self._brightness
 
     @property
-    def color_temp(self) -> int:
-        """Return color temperature."""
-        return self._color_temp
+    def color_temp_kelvin(self) -> int | None:
+        """Return color temperature in Kelvin (gateway uses mired)."""
+        if self._color_temp_mired <= 0:
+            return None
+        return int(color_temperature_mired_to_kelvin(self._color_temp_mired))
+
+    @property
+    def min_color_temp_kelvin(self) -> int:
+        """Return minimum color temperature in Kelvin."""
+        return 2000
+
+    @property
+    def max_color_temp_kelvin(self) -> int:
+        """Return maximum color temperature in Kelvin."""
+        return 6500
 
     @property
     def color_mode(self) -> ColorMode:
@@ -141,21 +155,24 @@ class HabitatLight(LightEntity):
         """Turn on the light."""
         state = 1
         level = kwargs.get(ATTR_BRIGHTNESS)
-        color_temp = kwargs.get(ATTR_COLOR_TEMP)
-        
+        color_temp_kelvin = kwargs.get(ATTR_COLOR_TEMP_KELVIN)
+        color_temp_mired = (
+            int(color_temperature_kelvin_to_mired(color_temp_kelvin))
+            if color_temp_kelvin is not None
+            else None
+        )
         success = await self._api.set_light(
             self._device_uid,
             state=state,
             level=level,
-            color_temp=color_temp
+            color_temp=color_temp_mired,
         )
-        
         if success:
             self._state = True
             if level is not None:
                 self._brightness = level
-            if color_temp is not None:
-                self._color_temp = color_temp
+            if color_temp_mired is not None:
+                self._color_temp_mired = color_temp_mired
             self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
