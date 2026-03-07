@@ -57,10 +57,10 @@ async def async_setup_entry(
                 HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 湿度", device, "humidity", SensorDeviceClass.HUMIDITY, PERCENTAGE)
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} PM2.5", device, "PM2_5U", SensorDeviceClass.PM25, "ug/m³")
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} PM2.5", device, "PM2_5U", SensorDeviceClass.PM25, "μg/m³")
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} PM10", device, "PM10U", SensorDeviceClass.PM10, "ug/m³")
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} PM10", device, "PM10U", SensorDeviceClass.PM10, "μg/m³")
             )
             sensors.append(
                 HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} CO2", device, "CO2M", SensorDeviceClass.CO2, CONCENTRATION_PARTS_PER_MILLION)
