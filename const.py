@@ -3,7 +3,7 @@
 from homeassistant.const import Platform
 
 DOMAIN = "habitat"
-PLATFORMS = [Platform.LIGHT, Platform.SWITCH, Platform.COVER, Platform.SENSOR]
+PLATFORMS = [Platform.LIGHT, Platform.SWITCH, Platform.COVER, Platform.SENSOR, Platform.NUMBER]
 
 # Default configuration
 DEFAULT_HOST = "172.16.33.72"
@@ -83,3 +83,17 @@ SWITCH_MODEL_CHANNEL_LABELS: dict[str, list[str]] = {
 }
 # 无匹配时的通用后缀
 SWITCH_CHANNEL_FALLBACK = "按键{i}"
+
+# 五合一面板：空调/新风/地暖控制；主面板判定为滤芯或加湿器使用小时非零
+PANEL_5IN1_MODELS = frozenset({"ZSW5HGJ", "SHC-4J01-SW"})
+PANEL_5IN1_MAIN_ATTRS = ("newWindFilterelementServicehours", "newWindHumidifierServicehours")
+FAN_LEVEL_AUTO = 7  # 空调/新风风速 0=关 1-6=档位 7=自动
+
+# 情景/五合一/多合一面板：其上“开关”实体默认在实体注册表中隐藏，用户可在 设置→实体 中取消隐藏
+SWITCH_MODELS_HIDDEN_BY_DEFAULT = frozenset({
+    "ZSW5HGJ",      # 五合一面板 (网关型号)
+    "SHC-8W01-SW",  # 五合一面板 (App 型号)
+    "SHC-8W02-SW",  # 4 键情景
+    "SHC-8Q04-SW",  # 四加一面板 (单键+情景1-4)
+    "CUN01GJ",      # 情景开关
+})

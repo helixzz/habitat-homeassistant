@@ -16,9 +16,25 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import HabitatAPI
-from .const import DOMAIN, SENSOR_MODELS, AC_MODELS, FA_MODEL, GA_MODEL
+from .const import DOMAIN, SENSOR_MODELS, AC_MODELS, FA_MODEL, GA_MODEL, PANEL_5IN1_MAIN_ATTRS
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _is_main_panel(dev_attrs: list) -> bool:
+    """五合一面板主面板：滤芯或加湿器使用小时任一项存在且非零。"""
+    for attr_name in PANEL_5IN1_MAIN_ATTRS:
+        for a in dev_attrs:
+            if a.get("name") == attr_name:
+                v = a.get("value")
+                if v is not None:
+                    try:
+                        if int(v) != 0:
+                            return True
+                    except (TypeError, ValueError):
+                        pass
+                break
+    return False
 
 
 async def async_setup_entry(
@@ -72,6 +88,19 @@ async def async_setup_entry(
             sensors.append(
                 HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "AQI", device, "homeAQI", SensorDeviceClass.AQI, None)
             )
+            # 主面板：地暖状态只读；滤芯/加湿器使用小时（若有）
+            if _is_main_panel(dev_attrs):
+                sensors.append(
+                    HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "地暖状态", device, "homeFloorheatState", None, None)
+                )
+                for attr_name, label in (
+                    ("newWindFilterelementServicehours", "滤芯使用小时"),
+                    ("newWindHumidifierServicehours", "加湿器使用小时"),
+                ):
+                    if any(a.get("name") == attr_name for a in dev_attrs):
+                        sensors.append(
+                            HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, label, device, attr_name, None, "hours")
+                        )
         
         # 空调传感器
         elif model in AC_MODELS and online:

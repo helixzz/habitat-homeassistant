@@ -20,6 +20,7 @@ from .const import (
     SWITCH_CHANNEL_NAME_ATTR_PATTERNS,
     SWITCH_MODEL_CHANNEL_LABELS,
     SWITCH_CHANNEL_FALLBACK,
+    SWITCH_MODELS_HIDDEN_BY_DEFAULT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -80,15 +81,16 @@ async def async_setup_entry(
                     except:
                         pass
             
+            hidden_by_default = model in SWITCH_MODELS_HIDDEN_BY_DEFAULT
             if switch_count > 1:
                 for i in range(switch_count):
                     channel_label = _channel_label_for_switch(dev_attrs, model, i)
                     switch_name = f"{name} {channel_label}"
                     switches.append(
-                        HabitatSwitch(apis_by_uid, primary_uid, default_api, coordinator, gateway_identifier, device_uid, switch_name, device, i)
+                        HabitatSwitch(apis_by_uid, primary_uid, default_api, coordinator, gateway_identifier, device_uid, switch_name, device, i, hidden_by_default)
                     )
             else:
-                switches.append(HabitatSwitch(apis_by_uid, primary_uid, default_api, coordinator, gateway_identifier, device_uid, name, device, 0))
+                switches.append(HabitatSwitch(apis_by_uid, primary_uid, default_api, coordinator, gateway_identifier, device_uid, name, device, 0, hidden_by_default))
     
     async_add_entities(switches)
 
@@ -107,8 +109,9 @@ class HabitatSwitch(SwitchEntity):
         name: str,
         device_data: dict,
         switch_index: int,
+        entity_registry_visible_default: bool = True,
     ):
-        """Initialize the switch. 控制时按设备当前所属网关(childGatewayId)选 API。"""
+        """Initialize the switch. 情景/五合一/多合一面板可传 entity_registry_visible_default=False 默认隐藏。"""
         self._apis_by_uid = apis_by_uid or {}
         self._primary_uid = primary_uid
         self._default_api = default_api
@@ -120,6 +123,7 @@ class HabitatSwitch(SwitchEntity):
         self._switch_index = switch_index
         self._state = False
         self._last_control_time: float = 0.0
+        self._attr_entity_registry_visible_default = entity_registry_visible_default
 
         self._update_state()
 
