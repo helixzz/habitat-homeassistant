@@ -43,27 +43,51 @@ async def validate_input(hass: HomeAssistant, data: dict) -> dict:
     return {"title": f"栖息地网关 ({data['uid']})", "devices": len(devices)}
 
 
+def _main_gateway_data_from_input(
+    user_input: dict[str, Any],
+    current_data: dict[str, Any],
+) -> dict[str, Any]:
+    """从选项表单生成主网关的 entry.data（host/port/uid/key/pwd）。"""
+    raw_port = user_input.get("main_gateway_port")
+    port = (
+        int(raw_port)
+        if raw_port is not None and str(raw_port).strip() != ""
+        else current_data.get(CONF_PORT, DEFAULT_PORT)
+    )
+    return {
+        **current_data,
+        CONF_HOST: (user_input.get("main_gateway_host") or current_data.get(CONF_HOST, "")).strip(),
+        CONF_PORT: port,
+        "uid": (user_input.get("main_gateway_uid") or current_data.get("uid", "")).strip(),
+        "key": (user_input.get("main_gateway_key") or current_data.get("key", "")).strip(),
+        "pwd": (user_input.get("main_gateway_pwd") or current_data.get("pwd", "")).strip(),
+    }
+
+
 def _options_data_from_input(
     user_input: dict[str, Any],
     inverted_cover_uids: list[str],
     current_options: dict[str, Any],
 ) -> dict[str, Any]:
-    """从选项表单生成 options 数据，含窗帘反向与子网关。"""
+    """从选项表单生成 options 数据，含窗帘反向与子网关。子网关字段留空则清除已有配置。"""
     data = {"inverted_cover_uids": inverted_cover_uids}
     host = (user_input.get("child_gateway_host") or "").strip()
     uid = (user_input.get("child_gateway_uid") or "").strip()
     key = (user_input.get("child_gateway_key") or "").strip() if user_input.get("child_gateway_key") is not None else ""
     pwd = (user_input.get("child_gateway_pwd") or "").strip() if user_input.get("child_gateway_pwd") is not None else ""
     if host and uid and key and pwd:
+        raw_port = user_input.get("child_gateway_port")
+        port = int(raw_port) if raw_port is not None and str(raw_port).strip() != "" else 80
         data["additional_gateways"] = [{
             "host": host,
-            "port": int(user_input.get("child_gateway_port", 80) or 80),
+            "port": port,
             "uid": uid,
             "key": key,
             "pwd": pwd,
         }]
     else:
-        data["additional_gateways"] = (current_options.get("additional_gateways") or [])[:1]
+        # 任一子网关字段留空视为“不配置子网关”，清除原有配置
+        data["additional_gateways"] = []
     return data
 
 
@@ -138,7 +162,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(title=info["title"], data=user_input)
 
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            step_id="user",
+            data_schema=STEP_USER_DATA_SCHEMA,
+            errors=errors,
+            description="主机可填 IP 或主机名。建议使用路由器中为网关分配的主机名或 DHCP 保留名称，这样网关 IP 因 DHCP 变更后无需修改配置即可自动连接。",
         )
 
     @staticmethod
@@ -158,47 +185,64 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
         entry = self.config_entry
         covers = _get_cover_devices(self.hass, entry.entry_id)
         opts = entry.options or {}
+        data = entry.data or {}
         inverted = set(opts.get("inverted_cover_uids") or [])
         child_list = opts.get("additional_gateways") or []
         child0 = child_list[0] if child_list else {}
 
+        # 主网关连接信息（可在配置中修改 IP/主机名等）；Schema 的键为 vol.Required/Optional，值为类型
+        main_fields = {
+            vol.Required("main_gateway_host", default=data.get(CONF_HOST, "")): str,
+            vol.Optional("main_gateway_port", default=data.get(CONF_PORT, DEFAULT_PORT)): int,
+            vol.Required("main_gateway_uid", default=data.get("uid", "")): str,
+            vol.Required("main_gateway_key", default=data.get("key", "")): str,
+            vol.Required("main_gateway_pwd", default=data.get("pwd", "")): str,
+        }
+        child_fields = {
+            vol.Optional("child_gateway_host", default=child0.get("host", "")): str,
+            vol.Optional("child_gateway_port", default=child0.get("port", 80)): int,
+            vol.Optional("child_gateway_uid", default=child0.get("uid", "")): str,
+            vol.Optional("child_gateway_key", default=child0.get("key", "")): str,
+            vol.Optional("child_gateway_pwd", default=child0.get("pwd", "")): str,
+        }
+
         if not covers:
             schema = {
                 vol.Optional("_no_covers", default=True): bool,
-                vol.Optional("child_gateway_host", default=child0.get("host", "")): str,
-                vol.Optional("child_gateway_port", default=child0.get("port", 80)): int,
-                vol.Optional("child_gateway_uid", default=child0.get("uid", "")): str,
-                vol.Optional("child_gateway_key", default=child0.get("key", "")): str,
-                vol.Optional("child_gateway_pwd", default=child0.get("pwd", "")): str,
+                **main_fields,
+                **child_fields,
             }
             if user_input is not None:
-                data = _options_data_from_input(user_input, list(inverted), opts)
-                return self.async_create_entry(title="", data=data)
+                new_data = _main_gateway_data_from_input(user_input, data)
+                self.hass.config_entries.async_update_entry(entry, data=new_data)
+                self.hass.config_entries.async_schedule_reload(entry.entry_id)
+                options_data = _options_data_from_input(user_input, list(inverted), opts)
+                return self.async_create_entry(title="", data=options_data)
             return self.async_show_form(
                 step_id="init",
                 data_schema=vol.Schema(schema),
-                description_placeholders={"msg": "当前未发现窗帘设备。下方可配置子网关（设备在子网关下时控制会发往子网关）。"},
+                description_placeholders={"msg": "当前未发现窗帘设备。上方可修改主网关连接（主机/IP、端口、UID、key、密码）；下方可配置子网关。主机建议填主机名或 DHCP 保留名。"},
             )
         def key_for(uid: str, name: str) -> str:
             return f"反向 - {name} ({uid[-8:]})"
 
         schema = {vol.Optional(key_for(uid, name), default=uid in inverted): bool for uid, name in covers}
-        schema["child_gateway_host"] = vol.Optional(str, default=child0.get("host", ""))
-        schema["child_gateway_port"] = vol.Optional(int, default=child0.get("port", 80))
-        schema["child_gateway_uid"] = vol.Optional(str, default=child0.get("uid", ""))
-        schema["child_gateway_key"] = vol.Optional(str, default=child0.get("key", ""))
-        schema["child_gateway_pwd"] = vol.Optional(str, default=child0.get("pwd", ""))
+        schema.update(main_fields)
+        schema.update(child_fields)
         data_schema = vol.Schema(schema)
 
         if user_input is not None:
+            new_data = _main_gateway_data_from_input(user_input, data)
+            self.hass.config_entries.async_update_entry(entry, data=new_data)
+            self.hass.config_entries.async_schedule_reload(entry.entry_id)
             inverted_cover_uids = [
                 uid for uid, name in covers
                 if user_input.get(key_for(uid, name), False)
             ]
-            data = _options_data_from_input(user_input, inverted_cover_uids, opts)
-            return self.async_create_entry(title="", data=data)
+            options_data = _options_data_from_input(user_input, inverted_cover_uids, opts)
+            return self.async_create_entry(title="", data=options_data)
         return self.async_show_form(
             step_id="init",
             data_schema=data_schema,
-            description_placeholders={"msg": "勾选需要反向的窗帘。下方可填子网关（若设备在子网关下，控制会发往子网关）。"},
+            description_placeholders={"msg": "上方可修改主网关连接（主机/IP、端口、UID、key、密码）。勾选需要反向的窗帘；下方可填子网关。主机建议填主机名或 DHCP 保留名。"},
         )

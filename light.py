@@ -81,7 +81,7 @@ class HabitatLight(LightEntity):
         self._state = False
         self._brightness = 0
         # 网关通常使用 mired 表示色温，内部保存 mired
-            self._color_temp_mired = 0
+        self._color_temp_mired = 0
 
         self._update_state()
 
