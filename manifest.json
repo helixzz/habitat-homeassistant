@@ -1,0 +1,15 @@
+{
+  "domain": "habitat",
+  "name": "栖息地智能家庭",
+  "version": "0.1.0",
+  "codeowners": ["@helixzz"],
+  "config_flow": true,
+  "documentation": "https://github.com/helixzz/habitat-homeassistant",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "requirements": [],
+  "dependencies": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "dhcp": []
+}
