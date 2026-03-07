@@ -26,12 +26,15 @@
 
 - `__init__.py`、`config_flow.py`、`manifest.json`、`const.py`、`api.py`
 - `light.py`、`switch.py`、`cover.py`、`sensor.py`
+- （可选）`brand/` 目录：若需在 HA 中显示集成 Logo（需 HA 2026.3+），请将 `assets/habitat-logo.webp` 转为 PNG 后保存为 `brand/logo.png`，并与 `brand/` 一并复制到 `custom_components/habitat/`。详见 `brand/README.md`。
 
 例如在仓库根目录执行（将 `config` 替换为你的 HA 配置目录路径）：
 
 ```bash
 mkdir -p config/custom_components/habitat
 cp __init__.py config_flow.py manifest.json const.py api.py light.py switch.py cover.py sensor.py config/custom_components/habitat/
+# 若有 brand/logo.png，一并复制以显示集成 Logo（HA 2026.3+）
+cp -r brand config/custom_components/habitat/ 2>/dev/null || true
 ```
 
 然后重启 Home Assistant。
