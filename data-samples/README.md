@@ -9,16 +9,18 @@
 - **路径**: `/gateway/getgatewaydevice`
 - **响应**: `{ "code": 200, "params": { "devices": [ ... ] } }`
 
-每个 `devices[]` 中的设备对象使用：
+每个 `devices[]` 中的设备对象（以 `getgatewaydevice.json` 实测为准）：
 
 | 字段 | 说明 |
 |------|------|
-| `model` | 型号，用于判断平台（灯/开关/窗帘/传感器） |
-| `deviceUid` | 设备唯一 ID |
-| `online` | 是否在线 |
-| `dev_attrs` | 属性数组，每项为 `{ "name": "属性名", "value": 值 }` 或含 `valueStr` |
+| `model` | 型号字符串，如 ZSW5HGJ、ZT21LGJ、ZBW4CGJ |
+| `deviceUid` | 设备唯一 ID，如 B0FD0BE01105117C |
+| `online` | 布尔，是否在线 |
+| `dev_attrs` | 属性数组，每项 `{ "name": "属性名", "value": 值 }`（数值或字符串，未见 `valueStr`） |
 
-多键开关的通道名会优先从 `dev_attrs` 中按 `state{i}Name`、`channel{i}Name` 等模式读取；若无则使用 `const.py` 中按型号配置的默认名（见下）。
+**窗帘**：`curtainState`（0/1/2）、`curtainLevel`（0–255 整数，中间值如 155 表示约 61% 开）、`curtainDir`。集成已按 0–255 解析并换算为 HA 的 0–100%。
+
+**多键开关**：网关返回 `state0`、`state1`… 及 `devName`，**不返回** `state0Name` 等通道名；集成用 `const.py` 中按 `model` 配置的默认通道名（如 ZSW5HGJ 五合一面板对应 按键1～5）。
 
 ---
 
@@ -61,8 +63,11 @@
 
 ---
 
-## 三、可选：网关 getgatewaydevice 样本
+## 三、网关样本 getgatewaydevice.json
 
-若你有 **网关** `/gateway/getgatewaydevice` 的响应（脱敏后），可保存为 `getgatewaydevice_sample.json` 放入本目录，便于核对 `dev_attrs` 中实际属性名（如是否含 state0Name、channelLabel 等），以便在 `const.py` 的 `SWITCH_CHANNEL_NAME_ATTR_PATTERNS` 中补充。
+本目录中的 `getgatewaydevice.json` 为网关 `/gateway/getgatewaydevice` 的真实响应样本（已脱敏），用于对齐集成与网关实际字段。
+
+- **窗帘**：`curtainLevel` 为 0–255 整数，中间值会正确显示为 HA 的 0–100% 开合度。
+- **开关型号**：网关侧五合一面板为 `ZSW5HGJ`（state0～state4），与 App 的 SHC-8W01-SW 为同类设备，集成已为 ZSW5HGJ 配置相同默认通道名。
 
 请勿提交包含网关 UID、Key、密码或家庭信息的真实凭证。

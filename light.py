@@ -88,9 +88,15 @@ class HabitatLight(LightEntity):
             if attr_name == "state":
                 self._state = bool(attr_value)
             elif attr_name == "level":
-                self._brightness = attr_value
+                try:
+                    self._brightness = int(attr_value) if attr_value is not None else 0
+                except (TypeError, ValueError):
+                    self._brightness = 0
             elif attr_name == "colorTemp":
-                self._color_temp_mired = int(attr_value) if attr_value is not None else 0
+                try:
+                    self._color_temp_mired = int(attr_value) if attr_value is not None else 0
+                except (TypeError, ValueError):
+                    self._color_temp_mired = 0
 
     @property
     def unique_id(self) -> str:
@@ -151,7 +157,7 @@ class HabitatLight(LightEntity):
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn on the light."""
+        """Turn on the light. 栖息地色温灯亮度与色温绑定，每次只下发一个量（优先亮度），另一量由设备联动。"""
         state = 1
         level = kwargs.get("brightness")
         color_temp_kelvin = kwargs.get(ATTR_COLOR_TEMP_KELVIN)
@@ -160,25 +166,39 @@ class HabitatLight(LightEntity):
             if color_temp_kelvin is not None
             else None
         )
+        # 只传用户本次修改的量，避免同时设两个导致设备行为异常；若两个都有则优先亮度
+        send_level = level if level is not None else None
+        send_color_temp = None
+        if color_temp_kelvin is not None:
+            send_color_temp = color_temp_mired
+        if level is not None and color_temp_mired is not None:
+            send_color_temp = None  # 两样都传时只发亮度，色温由设备联动
         success = await self._api.set_light(
             self._device_uid,
             state=state,
-            level=level,
-            color_temp=color_temp_mired,
+            level=send_level,
+            color_temp=send_color_temp,
         )
         if success:
+            await self._coordinator.async_request_refresh()
+            for device in self._coordinator.data or []:
+                if device.get("deviceUid") == self._device_uid:
+                    self._device_data = device
+                    self._update_state()
+                    break
             self._state = True
-            if level is not None:
-                self._brightness = level
-            if color_temp_mired is not None:
-                self._color_temp_mired = color_temp_mired
             self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the light."""
         success = await self._api.set_light(self._device_uid, state=0)
-        
         if success:
+            await self._coordinator.async_request_refresh()
+            for device in self._coordinator.data or []:
+                if device.get("deviceUid") == self._device_uid:
+                    self._device_data = device
+                    self._update_state()
+                    break
             self._state = False
             self.async_write_ha_state()
 
