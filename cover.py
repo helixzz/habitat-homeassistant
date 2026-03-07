@@ -34,6 +34,9 @@ async def async_setup_entry(
     gateway_identifier: str = data["gateway_identifier"]
     devices = coordinator.data or []
 
+    inverted_uids = set(
+        config_entry.options.get("inverted_cover_uids") or []
+    )
     covers = []
     for device in devices:
         model = device.get("model", "")
@@ -47,7 +50,8 @@ async def async_setup_entry(
                 if attr.get("name") == "devName":
                     name = attr.get("value", device_uid)
                     break
-            covers.append(HabitatCover(api, coordinator, gateway_identifier, device_uid, name, device))
+            inverted = device_uid in inverted_uids
+            covers.append(HabitatCover(api, coordinator, gateway_identifier, device_uid, name, device, inverted))
     async_add_entities(covers)
 
 
@@ -62,22 +66,34 @@ class HabitatCover(CoverEntity):
         device_uid: str,
         name: str,
         device_data: dict,
+        inverted: bool = False,
     ):
-        """Initialize the cover."""
+        """Initialize the cover. inverted=True 时 HA 开=物理关、HA 关=物理开。"""
         self._api = api
         self._coordinator = coordinator
         self._gateway_identifier = gateway_identifier
         self._device_uid = device_uid
         self._name = name
         self._device_data = device_data
-        self._level = 0  # 仅用 curtainLevel：0-255，0=关 255=开
+        self._inverted = inverted
+        self._level = 0  # 显示用 0-255：0=关 255=开（与 HA 一致，反向时内部已换算）
         self._attr_device_class = CoverDeviceClass.CURTAIN  # 平开帘
         self._polling_task: asyncio.Task | None = None  # 控制后的短期轮询任务
 
         self._update_state()
 
+    def _gateway_to_display_level(self, gateway_level: int) -> int:
+        """网关 level -> HA 显示 level（0=关 255=开）。"""
+        gateway_level = max(0, min(255, gateway_level))
+        return (255 - gateway_level) if self._inverted else gateway_level
+
+    def _display_to_gateway_level(self, display_level: int) -> int:
+        """HA 显示 level -> 发往网关的 level。"""
+        display_level = max(0, min(255, display_level))
+        return (255 - display_level) if self._inverted else display_level
+
     def _update_state(self):
-        """仅从 curtainLevel 更新；curtainState、curtainDir 实测常为 2/0 且无需关注。"""
+        """仅从 curtainLevel 更新；反向时 0/255 对调。"""
         dev_attrs = self._device_data.get("dev_attrs", [])
         for attr in dev_attrs:
             if attr.get("name") != "curtainLevel":
@@ -89,7 +105,7 @@ class HabitatCover(CoverEntity):
                 level = int(float(raw))
                 if 0 <= level <= 100:
                     level = int((level / 100) * 255)
-                self._level = max(0, min(255, level))
+                self._level = self._gateway_to_display_level(max(0, min(255, level)))
             except (TypeError, ValueError):
                 pass
             break
@@ -161,36 +177,40 @@ class HabitatCover(CoverEntity):
         self._polling_task = self.hass.async_create_task(_poll_loop())
 
     async def async_open_cover(self, **kwargs: Any) -> None:
-        """开帘：仅下发 curtainLevel=255；先乐观更新显示，再轮询网关跟上实际。"""
-        success = await self._api.set_cover(self._device_uid, level=255)
+        """开帘：HA 开 → 发 gateway level（反向时发 0）。"""
+        gw = self._display_to_gateway_level(255)
+        success = await self._api.set_cover(self._device_uid, level=gw)
         if success:
             self._level = 255
             self.async_write_ha_state()
             self._start_position_polling()
 
     async def async_close_cover(self, **kwargs: Any) -> None:
-        """关帘：仅下发 curtainLevel=0；先乐观更新显示，再轮询网关跟上实际。"""
-        success = await self._api.set_cover(self._device_uid, level=0)
+        """关帘：HA 关 → 发 gateway level（反向时发 255）。"""
+        gw = self._display_to_gateway_level(0)
+        success = await self._api.set_cover(self._device_uid, level=gw)
         if success:
             self._level = 0
             self.async_write_ha_state()
             self._start_position_polling()
 
     async def async_stop_cover(self, **kwargs: Any) -> None:
-        """停止：下发当前 level；拉一次网关更新显示。"""
-        success = await self._api.set_cover(self._device_uid, level=self._level)
+        """停止：下发当前对应的网关 level。"""
+        gw = self._display_to_gateway_level(self._level)
+        success = await self._api.set_cover(self._device_uid, level=gw)
         if success:
             await self._refresh_from_gateway()
             self.async_write_ha_state()
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
-        """设定开合度：先乐观更新到目标%，再轮询网关使显示跟上实际运动。"""
+        """设定开合度：HA 0-100% → 网关 level（反向时已换算）。"""
         position = kwargs.get("position", 0)
-        level = int((position / 100) * 255)
-        level = max(0, min(255, level))
-        success = await self._api.set_cover(self._device_uid, level=level)
+        display_level = int((position / 100) * 255)
+        display_level = max(0, min(255, display_level))
+        gw = self._display_to_gateway_level(display_level)
+        success = await self._api.set_cover(self._device_uid, level=gw)
         if success:
-            self._level = level
+            self._level = display_level
             self.async_write_ha_state()
             self._start_position_polling()
 
