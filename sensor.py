@@ -30,7 +30,7 @@ async def async_setup_entry(
     data = hass.data[DOMAIN][config_entry.entry_id]
     api: HabitatAPI = data["api"]
     coordinator: DataUpdateCoordinator = data["coordinator"]
-    gateway_device_id: str = data["gateway_device_id"]
+    gateway_identifier: str = data["gateway_identifier"]
     devices = coordinator.data or []
 
     sensors = []
@@ -51,37 +51,37 @@ async def async_setup_entry(
         # 五合一传感器 (environmental sensor)
         if model in SENSOR_MODELS and online:
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} 温度", device, "temperature", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 温度", device, "temperature", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} 湿度", device, "humidity", SensorDeviceClass.HUMIDITY, PERCENTAGE)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 湿度", device, "humidity", SensorDeviceClass.HUMIDITY, PERCENTAGE)
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} PM2.5", device, "PM2_5U", SensorDeviceClass.PM25, "ug/m³")
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} PM2.5", device, "PM2_5U", SensorDeviceClass.PM25, "ug/m³")
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} PM10", device, "PM10U", SensorDeviceClass.PM10, "ug/m³")
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} PM10", device, "PM10U", SensorDeviceClass.PM10, "ug/m³")
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} CO2", device, "CO2M", SensorDeviceClass.CO2, CONCENTRATION_PARTS_PER_MILLION)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} CO2", device, "CO2M", SensorDeviceClass.CO2, CONCENTRATION_PARTS_PER_MILLION)
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} AQI", device, "homeAQI", SensorDeviceClass.AQI, None)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} AQI", device, "homeAQI", SensorDeviceClass.AQI, None)
             )
         
         # 空调传感器
         elif model in AC_MODELS and online:
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} 当前温度", device, "temperature", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 当前温度", device, "temperature", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} 设定温度", device, "roomSettemp", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 设定温度", device, "roomSettemp", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
             )
         
         # 新风机
         elif model == FA_MODEL and online:
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} 湿度", device, "humidity", SensorDeviceClass.HUMIDITY, PERCENTAGE)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 湿度", device, "humidity", SensorDeviceClass.HUMIDITY, PERCENTAGE)
             )
             filters_hours = None
             for attr in dev_attrs:
@@ -89,16 +89,16 @@ async def async_setup_entry(
                     filters_hours = attr.get("value")
             if filters_hours is not None:
                 sensors.append(
-                    HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} 滤芯使用小时", device, "newWindFilterelementServicehours", None, "hours")
+                    HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 滤芯使用小时", device, "newWindFilterelementServicehours", None, "hours")
                 )
         
         # 燃气报警器
         elif model == GA_MODEL and online:
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} 气体状态", device, "sensor_gas_state", None, None)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 气体状态", device, "sensor_gas_state", None, None)
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_device_id, device_uid, f"{name} 气体浓度", device, "sensor_gas_concentration", None, "ppm")
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 气体浓度", device, "sensor_gas_concentration", None, "ppm")
             )
     
     async_add_entities(sensors)
@@ -111,7 +111,7 @@ class HabitatSensor(SensorEntity):
         self,
         api: HabitatAPI,
         coordinator: DataUpdateCoordinator,
-        gateway_device_id: str,
+        gateway_identifier: str,
         device_uid: str,
         name: str,
         device_data: dict,
@@ -122,7 +122,7 @@ class HabitatSensor(SensorEntity):
         """Initialize the sensor."""
         self._api = api
         self._coordinator = coordinator
-        self._gateway_device_id = gateway_device_id
+        self._gateway_identifier = gateway_identifier
         self._device_uid = device_uid
         self._name = name
         self._device_data = device_data
@@ -185,7 +185,7 @@ class HabitatSensor(SensorEntity):
             name=self._name.split(" ")[0],
             manufacturer="栖息地",
             model="传感器",
-            via_device=(DOMAIN, self._gateway_device_id),
+            via_device=(DOMAIN, self._gateway_identifier),
         )
 
     async def async_update(self) -> None:

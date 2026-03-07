@@ -26,7 +26,7 @@ async def async_setup_entry(
     data = hass.data[DOMAIN][config_entry.entry_id]
     api: HabitatAPI = data["api"]
     coordinator: DataUpdateCoordinator = data["coordinator"]
-    gateway_device_id: str = data["gateway_device_id"]
+    gateway_identifier: str = data["gateway_identifier"]
     devices = coordinator.data or []
 
     covers = []
@@ -42,7 +42,7 @@ async def async_setup_entry(
                 if attr.get("name") == "devName":
                     name = attr.get("value", device_uid)
                     break
-            covers.append(HabitatCover(api, coordinator, gateway_device_id, device_uid, name, device))
+            covers.append(HabitatCover(api, coordinator, gateway_identifier, device_uid, name, device))
     async_add_entities(covers)
 
 
@@ -53,7 +53,7 @@ class HabitatCover(CoverEntity):
         self,
         api: HabitatAPI,
         coordinator: DataUpdateCoordinator,
-        gateway_device_id: str,
+        gateway_identifier: str,
         device_uid: str,
         name: str,
         device_data: dict,
@@ -61,7 +61,7 @@ class HabitatCover(CoverEntity):
         """Initialize the cover."""
         self._api = api
         self._coordinator = coordinator
-        self._gateway_device_id = gateway_device_id
+        self._gateway_identifier = gateway_identifier
         self._device_uid = device_uid
         self._name = name
         self._device_data = device_data
@@ -124,7 +124,7 @@ class HabitatCover(CoverEntity):
             name=self._name,
             manufacturer="栖息地",
             model="电动窗帘",
-            via_device=(DOMAIN, self._gateway_device_id),
+            via_device=(DOMAIN, self._gateway_identifier),
         )
 
     async def async_open_cover(self, **kwargs: Any) -> None:

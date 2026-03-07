@@ -26,7 +26,7 @@ async def async_setup_entry(
     data = hass.data[DOMAIN][config_entry.entry_id]
     api: HabitatAPI = data["api"]
     coordinator: DataUpdateCoordinator = data["coordinator"]
-    gateway_device_id: str = data["gateway_device_id"]
+    gateway_identifier: str = data["gateway_identifier"]
     devices = coordinator.data or []
 
     switches = []
@@ -58,10 +58,10 @@ async def async_setup_entry(
                 for i in range(switch_count):
                     switch_name = f"{name} {i+1}" if switch_count > 1 else name
                     switches.append(
-                        HabitatSwitch(api, coordinator, gateway_device_id, device_uid, switch_name, device, i)
+                        HabitatSwitch(api, coordinator, gateway_identifier, device_uid, switch_name, device, i)
                     )
             else:
-                switches.append(HabitatSwitch(api, coordinator, gateway_device_id, device_uid, name, device, 0))
+                switches.append(HabitatSwitch(api, coordinator, gateway_identifier, device_uid, name, device, 0))
     
     async_add_entities(switches)
 
@@ -73,7 +73,7 @@ class HabitatSwitch(SwitchEntity):
         self,
         api: HabitatAPI,
         coordinator: DataUpdateCoordinator,
-        gateway_device_id: str,
+        gateway_identifier: str,
         device_uid: str,
         name: str,
         device_data: dict,
@@ -82,7 +82,7 @@ class HabitatSwitch(SwitchEntity):
         """Initialize the switch."""
         self._api = api
         self._coordinator = coordinator
-        self._gateway_device_id = gateway_device_id
+        self._gateway_identifier = gateway_identifier
         self._device_uid = device_uid
         self._name = name
         self._device_data = device_data
@@ -125,7 +125,7 @@ class HabitatSwitch(SwitchEntity):
             name=self._name.rsplit(" ", 1)[0] if " " in self._name else self._name,
             manufacturer="栖息地",
             model="智能开关",
-            via_device=(DOMAIN, self._gateway_device_id),
+            via_device=(DOMAIN, self._gateway_identifier),
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
