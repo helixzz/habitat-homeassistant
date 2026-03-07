@@ -1,0 +1,4208 @@
+{
+  "result_code": 0,
+  "data": [
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1967071179646427137,
+        "device_number": "B0FD0BE0110499BF",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "床头灯带",
+        "updateTime": 1757821709799,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 89,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 2915,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 35,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964950737267314690,
+        "device_number": "B0FD0BE01103C17E",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632837,
+        "room_name": "主卫",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "普通灯(双键S1连接)",
+        "product_model_code": "SHC-8Q03-SW",
+        "product_type_code": "LI",
+        "product_type_name": "普通灯",
+        "product_sub_type_code": "LI02",
+        "product_sub_type_name": "普通灯",
+        "product_model_pic_url": "",
+        "device_name": "台盆镜柜灯带",
+        "updateTime": 1757331603093,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2225,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2225,
+                "product_model_node_id": 2225,
+                "node_attr_name": "state1",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关(S1)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964950730824863745,
+        "device_number": "B0FD0BE01103C17E",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632837,
+        "room_name": "主卫",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "普通灯(双键S2连接)",
+        "product_model_code": "SHC-8Q03-SW",
+        "product_type_code": "LI",
+        "product_type_name": "普通灯",
+        "product_sub_type_code": "LI02",
+        "product_sub_type_name": "普通灯",
+        "product_model_pic_url": "",
+        "device_name": "干区照明",
+        "updateTime": 1757331602263,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2226,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2226,
+                "product_model_node_id": 2226,
+                "node_attr_name": "state6",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关(S2)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964903870236487682,
+        "device_number": "B0FD0BE011049E3E",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632836,
+        "room_name": "书房",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "书房灯带",
+        "updateTime": 1757330556658,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 128,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 3003,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 50,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964938331661561858,
+        "device_number": "B0FD0BE011049043",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632836,
+        "room_name": "书房",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "书房窗帘灯带",
+        "updateTime": 1757330556658,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 128,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 3003,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 50,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964938335310606337,
+        "device_number": "B0FD0BE011049ABF",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632836,
+        "room_name": "书房",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "书房筒灯",
+        "updateTime": 1757330556658,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 128,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 3003,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 50,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964905199275642882,
+        "device_number": "B0FD0BE011049329",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632835,
+        "room_name": "客卧",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "窗帘盒灯带",
+        "updateTime": 1757321864983,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 153,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 3205,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 60,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964905214681321473,
+        "device_number": "B0FD0BE011049B6E",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632835,
+        "room_name": "客卧",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "吸顶灯",
+        "updateTime": 1757321864983,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 153,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 3205,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 60,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964905229046812674,
+        "device_number": "B0FD0BE011049CE1",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632835,
+        "room_name": "客卧",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "次卧灯带",
+        "updateTime": 1757321864983,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 153,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 3205,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 60,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964899215266320385,
+        "device_number": "B0FD0BE011049085",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632839,
+        "room_name": "玄关",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "过道筒灯",
+        "updateTime": 1757321605008,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 179,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 3401,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 70,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964898536158171137,
+        "device_number": "B0FD0BE011049BC6",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632839,
+        "room_name": "玄关",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "玄关筒灯",
+        "updateTime": 1757321605008,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 179,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 3401,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 70,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964900589204099074,
+        "device_number": "B0FD0BE011049BD4",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "窗帘盒灯带",
+        "updateTime": 1757321321433,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 128,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 3003,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 50,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964900595059347457,
+        "device_number": "B0FD0BE011049A33",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "主卧灯带",
+        "updateTime": 1757321321433,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 128,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 3003,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 50,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964900602416156673,
+        "device_number": "B0FD0BE011049BBE",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "0",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "书桌筒灯",
+        "updateTime": 1757321321433,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 254,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 2702,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 100,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964900584040910850,
+        "device_number": "B0FD0BE011049AD7",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "主卧筒灯",
+        "updateTime": 1757321321433,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 115,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 2976,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 45,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964897846460534786,
+        "device_number": "B0FD0BE011049CCD",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892311216193537,
+        "room_name": "客餐厅",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "窗帘盒灯带",
+        "updateTime": 1757320910394,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 69,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 2865,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 27,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964897850810028033,
+        "device_number": "B0FD0BE011049E2F",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892311216193537,
+        "room_name": "客餐厅",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "客厅筒灯",
+        "updateTime": 1757320910394,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 69,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 2865,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 27,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964897855880941569,
+        "device_number": "B0FD0BE011049117",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892311216193537,
+        "room_name": "客餐厅",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "色温灯",
+        "product_model_code": "SHC-6D01-SW",
+        "product_type_code": "LI",
+        "product_type_name": "色温灯",
+        "product_sub_type_code": "LI01",
+        "product_sub_type_name": "色温灯",
+        "product_model_pic_url": "",
+        "device_name": "客厅灯带",
+        "updateTime": 1757320910394,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2200,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2200,
+                "product_model_node_id": 2200,
+                "node_attr_name": "state",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关"
+              },
+              {
+                "id": 2201,
+                "product_model_node_id": 2200,
+                "node_attr_name": "level",
+                "node_attr_type": "1",
+                "value": 31,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "灯亮度"
+              },
+              {
+                "id": 2202,
+                "product_model_node_id": 2200,
+                "node_attr_name": "colorTemp",
+                "node_attr_type": "1",
+                "value": 2762,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "color_temperature",
+                "describe": "灯色温"
+              },
+              {
+                "id": 2203,
+                "product_model_node_id": 2200,
+                "node_attr_name": "levelMixColorTemp",
+                "node_attr_type": "1",
+                "value": 10,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "levelMixColorTemp",
+                "describe": "亮度色温组合"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964951493458382850,
+        "device_number": "B0FD0BE01104A028",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632837,
+        "room_name": "主卫",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "普通灯(单键S1连接)",
+        "product_model_code": "SHC-8Q02-SW",
+        "product_type_code": "LI",
+        "product_type_name": "普通灯",
+        "product_sub_type_code": "LI02",
+        "product_sub_type_name": "普通灯",
+        "product_model_pic_url": "",
+        "device_name": "浴室照明",
+        "updateTime": 1757317029704,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2211,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2211,
+                "product_model_node_id": 2211,
+                "node_attr_name": "state1",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关(S1)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964951822290685953,
+        "device_number": "B0FD0BE01104A228",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632837,
+        "room_name": "主卫",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "普通灯(单键S1连接)",
+        "product_model_code": "SHC-8Q02-SW",
+        "product_type_code": "LI",
+        "product_type_name": "普通灯",
+        "product_sub_type_code": "LI02",
+        "product_sub_type_name": "普通灯",
+        "product_model_pic_url": "",
+        "device_name": "马桶区照明",
+        "updateTime": 1757317011190,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2211,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2211,
+                "product_model_node_id": 2211,
+                "node_attr_name": "state1",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关(S1)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964951305788444674,
+        "device_number": "B0FD0BE01104A228",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632837,
+        "room_name": "主卫",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "单键智能开关",
+        "product_model_code": "SHC-8Q02-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW01",
+        "product_sub_type_name": "单键智能开关",
+        "product_model_pic_url": "",
+        "device_name": "单键智能开关（马桶区）",
+        "updateTime": 1757315897756,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2010,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2010,
+                "product_model_node_id": 2010,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 2011,
+                "product_model_node_id": 2010,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click"
+              },
+              {
+                "id": 2012,
+                "product_model_node_id": 2010,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964950542281379842,
+        "device_number": "1CC089FFFEB4F988",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632838,
+        "room_name": "中厨",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "燃气报警器",
+        "product_model_code": "SHC-GA01-SW",
+        "product_type_code": "GA",
+        "product_type_name": "燃气报警器",
+        "product_sub_type_code": "GA01",
+        "product_sub_type_name": "吸顶燃气报警器",
+        "device_name": "可燃气体传感器",
+        "updateTime": 1757315708845,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2600,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2601,
+                "product_model_node_id": 2600,
+                "node_attr_name": "selfCheck",
+                "node_attr_type": "1",
+                "value": "",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "2",
+                "base_attr_name": "self_check",
+                "describe": "自检"
+              },
+              {
+                "id": 2603,
+                "product_model_node_id": 2600,
+                "node_attr_name": "sensorMute",
+                "node_attr_type": "1",
+                "value": "",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "2",
+                "base_attr_name": "sensor_mute",
+                "describe": "禁音"
+              },
+              {
+                "id": 2604,
+                "product_model_node_id": 2600,
+                "node_attr_name": "sensor_gas_state",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "sensor_gas_state",
+                "describe": "报警上报"
+              },
+              {
+                "id": 2602,
+                "product_model_node_id": 2600,
+                "node_attr_name": "sensorSound",
+                "node_attr_type": "1",
+                "value": "",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "2",
+                "base_attr_name": "sensor_sound",
+                "describe": "发声"
+              },
+              {
+                "id": 2605,
+                "product_model_node_id": 2600,
+                "node_attr_name": "sensor_gas_concentration",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "sensor_gas_concentration",
+                "describe": "气体浓度上报"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964949669968039937,
+        "device_number": "B0FD0BE01103B5F5",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632838,
+        "room_name": "中厨",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "0",
+        "product_model_name": "普通灯(双键S2连接)",
+        "product_model_code": "SHC-8Q03-SW",
+        "product_type_code": "LI",
+        "product_type_name": "普通灯",
+        "product_sub_type_code": "LI02",
+        "product_sub_type_name": "普通灯",
+        "product_model_pic_url": "",
+        "device_name": "厨房照明",
+        "updateTime": 1757315547530,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2226,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2226,
+                "product_model_node_id": 2226,
+                "node_attr_name": "state6",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "灯开关(S2)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964949127250268161,
+        "device_number": "B0FD0BE011047B3F",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892311216193537,
+        "room_name": "客餐厅",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "水机室内机",
+        "product_model_code": "FP_1020R",
+        "product_type_code": "AC",
+        "product_type_name": "空调",
+        "product_sub_type_code": "AC01",
+        "product_sub_type_name": "中央空调",
+        "product_model_pic_url": "",
+        "device_name": "客厅空调",
+        "updateTime": 1757315353583,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2100,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2103,
+                "product_model_node_id": 2100,
+                "node_attr_name": "roomSettemp",
+                "node_attr_type": "1",
+                "value": 230,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "set_temperature",
+                "describe": "空调温度设定"
+              },
+              {
+                "id": 2100,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCondState",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "空调开关"
+              },
+              {
+                "id": 2101,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCond3Mode",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "mode",
+                "describe": "空调模式"
+              },
+              {
+                "id": 2102,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCond11Fanlevel",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "wind_speed",
+                "describe": "空调风速"
+              },
+              {
+                "id": 23616,
+                "product_model_node_id": 2100,
+                "node_attr_name": "temperature",
+                "node_attr_type": "1",
+                "value": 233,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "temperature",
+                "describe": "温度"
+              },
+              {
+                "id": 2139,
+                "product_model_node_id": 2100,
+                "node_attr_name": "sleepMode",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 3,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "sleepMode",
+                "describe": "睡眠模式开关"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964948863663763457,
+        "device_number": "B0FD0BE011047B3F",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892311216193537,
+        "room_name": "客餐厅",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "地暖控制器",
+        "product_model_code": "8DO",
+        "product_type_code": "UH",
+        "product_type_name": "地暖",
+        "product_sub_type_code": "UH01",
+        "product_sub_type_name": "地暖",
+        "product_model_pic_url": "",
+        "device_name": "全屋地暖",
+        "updateTime": 1757315290739,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2101,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2110,
+                "product_model_node_id": 2101,
+                "node_attr_name": "homeFloorheatState",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "地暖开关"
+              },
+              {
+                "id": 2111,
+                "product_model_node_id": 2101,
+                "node_attr_name": "anti_freeze_state",
+                "node_attr_type": "1",
+                "value": "0",
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "anti_freeze_state",
+                "describe": "地暖防冻开关"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964948729076600833,
+        "device_number": "B0FD0BE011047B3F",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892311216193537,
+        "room_name": "客餐厅",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "全热净化新风机",
+        "product_model_code": "XF-430",
+        "product_type_code": "FA",
+        "product_type_name": "新风",
+        "product_sub_type_code": "FA01",
+        "product_sub_type_name": "新风",
+        "product_model_pic_url": "",
+        "device_name": "全屋新风",
+        "updateTime": 1757315258651,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2102,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2120,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWindState",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "新风开关"
+              },
+              {
+                "id": 2121,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWind11Fanlevel",
+                "node_attr_type": "1",
+                "value": 5,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "wind_speed",
+                "describe": "新风风速"
+              },
+              {
+                "id": 2122,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWindSetHumi",
+                "node_attr_type": "1",
+                "value": 450,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "set_humidity",
+                "describe": "新风设定湿度"
+              },
+              {
+                "id": 2123,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWindHumidifierState",
+                "node_attr_type": "1",
+                "value": "",
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "humidification_state",
+                "describe": "新风加湿开关"
+              },
+              {
+                "id": 2124,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWindFilterelementServicehours",
+                "node_attr_type": "1",
+                "value": 1187,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "filter_service_hours",
+                "describe": "新风滤芯使用小时数"
+              },
+              {
+                "id": 2124,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWindFilterelementResidueDays",
+                "node_attr_type": "1",
+                "value": 40,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "newWindFilterelementResidueDays",
+                "describe": "新风滤芯使用剩余天"
+              },
+              {
+                "id": 2125,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWindHumidifierServicehours",
+                "node_attr_type": "1",
+                "value": 617,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "filter_humidifier_hours",
+                "describe": "新风加湿桶使用小时数"
+              },
+              {
+                "id": 2125,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWindHumidifierResidueDays",
+                "node_attr_type": "1",
+                "value": 154,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "newWindHumidifierResidueDays",
+                "describe": "新风加湿桶使用剩余天"
+              },
+              {
+                "id": 23613,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWindFilterelementTotalhours",
+                "node_attr_type": "1",
+                "value": 2160,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "filter_total_hours",
+                "describe": "新风滤芯可使用总小时数"
+              },
+              {
+                "id": 23614,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWindHumidifierTotalhours",
+                "node_attr_type": "1",
+                "value": 4320,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "humidifier_total_hours",
+                "describe": "新风加湿桶可使用总小时数"
+              },
+              {
+                "id": 2131,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWindCombination",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "new_wind_combination",
+                "describe": "0:无新风机,1:双向新风机,2:双向新风机+加湿,3:双向新风机+除湿,4:单向新风机"
+              },
+              {
+                "id": 2126,
+                "product_model_node_id": 2102,
+                "node_attr_name": "newWindMode",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "newWindMode",
+                "describe": "新风模式"
+              },
+              {
+                "id": 12131,
+                "product_model_node_id": 2102,
+                "node_attr_name": "fresh_air_mode",
+                "node_attr_type": "1",
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "fresh_air_mode",
+                "describe": "新风加湿除湿状态"
+              },
+              {
+                "id": 23615,
+                "product_model_node_id": 2102,
+                "node_attr_name": "humidity",
+                "node_attr_type": "1",
+                "value": 450,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "humidity",
+                "describe": "湿度"
+              },
+              {
+                "id": 12130,
+                "product_model_node_id": 2102,
+                "node_attr_name": "hum_c",
+                "node_attr_type": "1",
+                "value": "",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "hum_c",
+                "describe": "自动加湿开关"
+              },
+              {
+                "id": 12132,
+                "product_model_node_id": 2102,
+                "node_attr_name": "dehum_c",
+                "node_attr_type": "1",
+                "value": "",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "dehum_c",
+                "describe": "自动除湿开关"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964948628929540098,
+        "device_number": "B0FD0BE011047B3F",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892311216193537,
+        "room_name": "客餐厅",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "五合一传感器",
+        "product_model_code": "SHC-4J01-SW",
+        "product_type_code": "SE",
+        "product_type_name": "传感器",
+        "product_sub_type_code": "SE01",
+        "product_sub_type_name": "5合1传感器",
+        "product_model_pic_url": "",
+        "device_name": "传感器",
+        "updateTime": 1757315234774,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2500,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2505,
+                "product_model_node_id": 2500,
+                "node_attr_name": "homeAQI",
+                "node_attr_type": "1",
+                "value": 31,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "homeAQI",
+                "describe": "homeAQI"
+              },
+              {
+                "id": 2500,
+                "product_model_node_id": 2500,
+                "node_attr_name": "PM10U",
+                "node_attr_type": "1",
+                "value": 6,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "pm_10",
+                "describe": "pm10"
+              },
+              {
+                "id": 2501,
+                "product_model_node_id": 2500,
+                "node_attr_name": "CO2M",
+                "node_attr_type": "1",
+                "value": 628,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "co2",
+                "describe": "二氧化碳"
+              },
+              {
+                "id": 2502,
+                "product_model_node_id": 2500,
+                "node_attr_name": "temperature",
+                "node_attr_type": "1",
+                "value": 233,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "temperature",
+                "describe": "温度"
+              },
+              {
+                "id": 2503,
+                "product_model_node_id": 2500,
+                "node_attr_name": "humidity",
+                "node_attr_type": "1",
+                "value": 450,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "humidity",
+                "describe": "湿度"
+              },
+              {
+                "id": 2504,
+                "product_model_node_id": 2500,
+                "node_attr_name": "PM2_5U",
+                "node_attr_type": "1",
+                "value": 4,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "pm2_5",
+                "describe": "pm2.5"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964948020779061249,
+        "device_number": "B0FD0BE011051113",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892311216193537,
+        "room_name": "客餐厅",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "电动窗帘1.0",
+        "product_model_code": "EC02000001",
+        "product_type_code": "EC",
+        "product_type_name": "电动窗帘",
+        "product_sub_type_code": "EC01",
+        "product_sub_type_name": "电动窗帘",
+        "product_model_pic_url": "",
+        "device_name": "智能窗帘电机",
+        "updateTime": 1757315099185,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2400,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2400,
+                "product_model_node_id": 2400,
+                "node_attr_name": "curtainState",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "窗帘开关"
+              },
+              {
+                "id": 2401,
+                "product_model_node_id": 2400,
+                "node_attr_name": "curtainLevel",
+                "node_attr_type": "1",
+                "value": 255,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "窗帘开合度"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964946768751087618,
+        "device_number": "B0FD0BE011047975",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "水机室内机",
+        "product_model_code": "FP_510R",
+        "product_type_code": "AC",
+        "product_type_name": "空调",
+        "product_sub_type_code": "AC01",
+        "product_sub_type_name": "中央空调",
+        "product_model_pic_url": "",
+        "device_name": "主卧空调",
+        "updateTime": 1757314791273,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2100,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2103,
+                "product_model_node_id": 2100,
+                "node_attr_name": "roomSettemp",
+                "node_attr_type": "1",
+                "value": 240,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "set_temperature",
+                "describe": "空调温度设定"
+              },
+              {
+                "id": 2100,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCondState",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "空调开关"
+              },
+              {
+                "id": 2101,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCond3Mode",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "mode",
+                "describe": "空调模式"
+              },
+              {
+                "id": 2102,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCond11Fanlevel",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "wind_speed",
+                "describe": "空调风速"
+              },
+              {
+                "id": 23616,
+                "product_model_node_id": 2100,
+                "node_attr_name": "temperature",
+                "node_attr_type": "1",
+                "value": 229,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "temperature",
+                "describe": "温度"
+              },
+              {
+                "id": 2139,
+                "product_model_node_id": 2100,
+                "node_attr_name": "sleepMode",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 3,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "sleepMode",
+                "describe": "睡眠模式开关"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964946648297934850,
+        "device_number": "B0FD0BE011047975",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "五合一传感器",
+        "product_model_code": "SHC-4J01-SW",
+        "product_type_code": "SE",
+        "product_type_name": "传感器",
+        "product_sub_type_code": "SE01",
+        "product_sub_type_name": "5合1传感器",
+        "product_model_pic_url": "",
+        "device_name": "传感器",
+        "updateTime": 1757314762555,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2500,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2505,
+                "product_model_node_id": 2500,
+                "node_attr_name": "homeAQI",
+                "node_attr_type": "1",
+                "value": 24,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "homeAQI",
+                "describe": "homeAQI"
+              },
+              {
+                "id": 2500,
+                "product_model_node_id": 2500,
+                "node_attr_name": "PM10U",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "pm_10",
+                "describe": "pm10"
+              },
+              {
+                "id": 2501,
+                "product_model_node_id": 2500,
+                "node_attr_name": "CO2M",
+                "node_attr_type": "1",
+                "value": 486,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "co2",
+                "describe": "二氧化碳"
+              },
+              {
+                "id": 2502,
+                "product_model_node_id": 2500,
+                "node_attr_name": "temperature",
+                "node_attr_type": "1",
+                "value": 229,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "temperature",
+                "describe": "温度"
+              },
+              {
+                "id": 2503,
+                "product_model_node_id": 2500,
+                "node_attr_name": "humidity",
+                "node_attr_type": "1",
+                "value": 540,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "humidity",
+                "describe": "湿度"
+              },
+              {
+                "id": 2504,
+                "product_model_node_id": 2500,
+                "node_attr_name": "PM2_5U",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "pm2_5",
+                "describe": "pm2.5"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964945957048840193,
+        "device_number": "B0FD0BE011047BE8",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632835,
+        "room_name": "客卧",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "水机室内机",
+        "product_model_code": "FP_510R",
+        "product_type_code": "AC",
+        "product_type_name": "空调",
+        "product_sub_type_code": "AC01",
+        "product_sub_type_name": "中央空调",
+        "product_model_pic_url": "",
+        "device_name": "次卧空调",
+        "updateTime": 1757314597747,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2100,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2103,
+                "product_model_node_id": 2100,
+                "node_attr_name": "roomSettemp",
+                "node_attr_type": "1",
+                "value": 220,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "set_temperature",
+                "describe": "空调温度设定"
+              },
+              {
+                "id": 2100,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCondState",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "空调开关"
+              },
+              {
+                "id": 2101,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCond3Mode",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "mode",
+                "describe": "空调模式"
+              },
+              {
+                "id": 2102,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCond11Fanlevel",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "wind_speed",
+                "describe": "空调风速"
+              },
+              {
+                "id": 23616,
+                "product_model_node_id": 2100,
+                "node_attr_name": "temperature",
+                "node_attr_type": "1",
+                "value": 191,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "temperature",
+                "describe": "温度"
+              },
+              {
+                "id": 2139,
+                "product_model_node_id": 2100,
+                "node_attr_name": "sleepMode",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 3,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "sleepMode",
+                "describe": "睡眠模式开关"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964945795215478785,
+        "device_number": "B0FD0BE011047BE8",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632835,
+        "room_name": "客卧",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "五合一传感器",
+        "product_model_code": "SHC-4J01-SW",
+        "product_type_code": "SE",
+        "product_type_name": "传感器",
+        "product_sub_type_code": "SE01",
+        "product_sub_type_name": "5合1传感器",
+        "product_model_pic_url": "",
+        "device_name": "传感器",
+        "updateTime": 1757314559164,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2500,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2505,
+                "product_model_node_id": 2500,
+                "node_attr_name": "homeAQI",
+                "node_attr_type": "1",
+                "value": 31,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "homeAQI",
+                "describe": "homeAQI"
+              },
+              {
+                "id": 2500,
+                "product_model_node_id": 2500,
+                "node_attr_name": "PM10U",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "pm_10",
+                "describe": "pm10"
+              },
+              {
+                "id": 2501,
+                "product_model_node_id": 2500,
+                "node_attr_name": "CO2M",
+                "node_attr_type": "1",
+                "value": 620,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "co2",
+                "describe": "二氧化碳"
+              },
+              {
+                "id": 2502,
+                "product_model_node_id": 2500,
+                "node_attr_name": "temperature",
+                "node_attr_type": "1",
+                "value": 191,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "temperature",
+                "describe": "温度"
+              },
+              {
+                "id": 2503,
+                "product_model_node_id": 2500,
+                "node_attr_name": "humidity",
+                "node_attr_type": "1",
+                "value": 600,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "humidity",
+                "describe": "湿度"
+              },
+              {
+                "id": 2504,
+                "product_model_node_id": 2500,
+                "node_attr_name": "PM2_5U",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "pm2_5",
+                "describe": "pm2.5"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964939354841051137,
+        "device_number": "B0FD0BE011047AFC",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632836,
+        "room_name": "书房",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "水机室内机",
+        "product_model_code": "FP_510L",
+        "product_type_code": "AC",
+        "product_type_name": "空调",
+        "product_sub_type_code": "AC01",
+        "product_sub_type_name": "中央空调",
+        "product_model_pic_url": "",
+        "device_name": "书房空调",
+        "updateTime": 1757313023658,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2100,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2103,
+                "product_model_node_id": 2100,
+                "node_attr_name": "roomSettemp",
+                "node_attr_type": "1",
+                "value": 200,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "set_temperature",
+                "describe": "空调温度设定"
+              },
+              {
+                "id": 2100,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCondState",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "空调开关"
+              },
+              {
+                "id": 2101,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCond3Mode",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "mode",
+                "describe": "空调模式"
+              },
+              {
+                "id": 2102,
+                "product_model_node_id": 2100,
+                "node_attr_name": "airCond11Fanlevel",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "wind_speed",
+                "describe": "空调风速"
+              },
+              {
+                "id": 23616,
+                "product_model_node_id": 2100,
+                "node_attr_name": "temperature",
+                "node_attr_type": "1",
+                "value": 232,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "temperature",
+                "describe": "温度"
+              },
+              {
+                "id": 2139,
+                "product_model_node_id": 2100,
+                "node_attr_name": "sleepMode",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 3,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "sleepMode",
+                "describe": "睡眠模式开关"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964939129573371906,
+        "device_number": "B0FD0BE011047AFC",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632836,
+        "room_name": "书房",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "五合一传感器",
+        "product_model_code": "SHC-4J01-SW",
+        "product_type_code": "SE",
+        "product_type_name": "传感器",
+        "product_sub_type_code": "SE01",
+        "product_sub_type_name": "5合1传感器",
+        "product_model_pic_url": "",
+        "device_name": "传感器",
+        "updateTime": 1757312969951,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2500,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2505,
+                "product_model_node_id": 2500,
+                "node_attr_name": "homeAQI",
+                "node_attr_type": "1",
+                "value": 33,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "homeAQI",
+                "describe": "homeAQI"
+              },
+              {
+                "id": 2500,
+                "product_model_node_id": 2500,
+                "node_attr_name": "PM10U",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "pm_10",
+                "describe": "pm10"
+              },
+              {
+                "id": 2501,
+                "product_model_node_id": 2500,
+                "node_attr_name": "CO2M",
+                "node_attr_type": "1",
+                "value": 660,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "co2",
+                "describe": "二氧化碳"
+              },
+              {
+                "id": 2502,
+                "product_model_node_id": 2500,
+                "node_attr_name": "temperature",
+                "node_attr_type": "1",
+                "value": 232,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "temperature",
+                "describe": "温度"
+              },
+              {
+                "id": 2503,
+                "product_model_node_id": 2500,
+                "node_attr_name": "humidity",
+                "node_attr_type": "1",
+                "value": 460,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "humidity",
+                "describe": "湿度"
+              },
+              {
+                "id": 2504,
+                "product_model_node_id": 2500,
+                "node_attr_name": "PM2_5U",
+                "node_attr_type": "1",
+                "value": 1,
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "1",
+                "base_attr_name": "pm2_5",
+                "describe": "pm2.5"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964937862380294146,
+        "device_number": "B0FD0BE0110510F4",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632835,
+        "room_name": "客卧",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "电动窗帘1.0",
+        "product_model_code": "EC02000001",
+        "product_type_code": "EC",
+        "product_type_name": "电动窗帘",
+        "product_sub_type_code": "EC01",
+        "product_sub_type_name": "电动窗帘",
+        "product_model_pic_url": "",
+        "device_name": "智能窗帘电机",
+        "updateTime": 1757312680348,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2400,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2400,
+                "product_model_node_id": 2400,
+                "node_attr_name": "curtainState",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "窗帘开关"
+              },
+              {
+                "id": 2401,
+                "product_model_node_id": 2400,
+                "node_attr_name": "curtainLevel",
+                "node_attr_type": "1",
+                "value": 255,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "窗帘开合度"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964936424635797505,
+        "device_number": "B0FD0BE01103C17E",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632837,
+        "room_name": "主卫",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "双键开关",
+        "product_model_code": "SHC-8Q03-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW03",
+        "product_sub_type_name": "双键开关",
+        "product_model_pic_url": "",
+        "device_name": "双键智能开关",
+        "updateTime": 1757312334066,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2030,
+            "node_name": "单键开关1",
+            "node_identifier": "single_switch_1",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2031,
+                "product_model_node_id": 2030,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 2032,
+                "product_model_node_id": 2030,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click"
+              },
+              {
+                "id": 2033,
+                "product_model_node_id": 2030,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2030,
+            "node_name": "单键开关2",
+            "node_identifier": "single_switch_2",
+            "index": 1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2035,
+                "product_model_node_id": 2035,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 2036,
+                "product_model_node_id": 2035,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click"
+              },
+              {
+                "id": 2037,
+                "product_model_node_id": 2035,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964936381498945537,
+        "device_number": "B0FD0BE01104A028",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632837,
+        "room_name": "主卫",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "单键智能开关",
+        "product_model_code": "SHC-8Q02-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW01",
+        "product_sub_type_name": "单键智能开关",
+        "product_model_pic_url": "",
+        "device_name": "单键智能开关",
+        "updateTime": 1757312323277,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2010,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2010,
+                "product_model_node_id": 2010,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 2011,
+                "product_model_node_id": 2010,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click"
+              },
+              {
+                "id": 2012,
+                "product_model_node_id": 2010,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964905114497306625,
+        "device_number": "B0FD0BE01104A8FF",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632835,
+        "room_name": "客卧",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "4键快充开关面板",
+        "product_model_code": "SHC-8W02-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW08",
+        "product_sub_type_name": "4键快充开关面板",
+        "product_model_pic_url": "",
+        "device_name": "4键情景开关",
+        "updateTime": 1757304885218,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键0",
+            "node_identifier": "scene_0",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20510,
+                "product_model_node_id": 2051,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键1",
+            "node_identifier": "scene_1",
+            "index": 1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20520,
+                "product_model_node_id": 2052,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键2",
+            "node_identifier": "scene_2",
+            "index": 2,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20530,
+                "product_model_node_id": 2053,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键3",
+            "node_identifier": "scene_3",
+            "index": 3,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20540,
+                "product_model_node_id": 2054,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964904012129792002,
+        "device_number": "B0FD0BE01105117C",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632836,
+        "room_name": "书房",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "电动窗帘1.0",
+        "product_model_code": "EC02000001",
+        "product_type_code": "EC",
+        "product_type_name": "电动窗帘",
+        "product_sub_type_code": "EC01",
+        "product_sub_type_name": "电动窗帘",
+        "product_model_pic_url": "",
+        "device_name": "智能窗帘电机",
+        "updateTime": 1757304607264,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2400,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2400,
+                "product_model_node_id": 2400,
+                "node_attr_name": "curtainState",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "窗帘开关"
+              },
+              {
+                "id": 2401,
+                "product_model_node_id": 2400,
+                "node_attr_name": "curtainLevel",
+                "node_attr_type": "1",
+                "value": 0,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "窗帘开合度"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964902404423274497,
+        "device_number": "B0FD0BE011047AFC",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632836,
+        "room_name": "书房",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "五合一面板",
+        "product_model_code": "SHC-8W01-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW07",
+        "product_sub_type_name": "5合1面板",
+        "product_model_pic_url": "",
+        "device_name": "五合一面板",
+        "updateTime": 1757304235313,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2070,
+            "node_name": "单键开关",
+            "node_identifier": "single_switch",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2072,
+                "product_model_node_id": 2070,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press",
+                "describe": "长按"
+              },
+              {
+                "id": 2071,
+                "product_model_node_id": 2070,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click",
+                "describe": "双击"
+              },
+              {
+                "id": 2070,
+                "product_model_node_id": 2070,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click",
+                "describe": "单击"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964901926696677377,
+        "device_number": "B0FD0BE0110510B1",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "电动窗帘1.0",
+        "product_model_code": "EC02000001",
+        "product_type_code": "EC",
+        "product_type_name": "电动窗帘",
+        "product_sub_type_code": "EC01",
+        "product_sub_type_name": "电动窗帘",
+        "product_model_pic_url": "",
+        "device_name": "智能窗帘电机",
+        "updateTime": 1757304112015,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2400,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2400,
+                "product_model_node_id": 2400,
+                "node_attr_name": "curtainState",
+                "node_attr_type": "1",
+                "value": 2,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "state",
+                "describe": "窗帘开关"
+              },
+              {
+                "id": 2401,
+                "product_model_node_id": 2400,
+                "node_attr_name": "curtainLevel",
+                "node_attr_type": "1",
+                "value": 254,
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "level",
+                "describe": "窗帘开合度"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964901338376867841,
+        "device_number": "B0FD0BE01104A885",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "4键快充开关面板",
+        "product_model_code": "SHC-8W02-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW08",
+        "product_sub_type_name": "4键快充开关面板",
+        "product_model_pic_url": "",
+        "device_name": "4键情景开关（内）",
+        "updateTime": 1757303976274,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键0",
+            "node_identifier": "scene_0",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20510,
+                "product_model_node_id": 2051,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键1",
+            "node_identifier": "scene_1",
+            "index": 1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20520,
+                "product_model_node_id": 2052,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键2",
+            "node_identifier": "scene_2",
+            "index": 2,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20530,
+                "product_model_node_id": 2053,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键3",
+            "node_identifier": "scene_3",
+            "index": 3,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20540,
+                "product_model_node_id": 2054,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964900681252196353,
+        "device_number": "B0FD0BE01104A8EE",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "4键快充开关面板",
+        "product_model_code": "SHC-8W02-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW08",
+        "product_sub_type_name": "4键快充开关面板",
+        "product_model_pic_url": "",
+        "device_name": "4键情景开关（外）",
+        "updateTime": 1757303880479,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键0",
+            "node_identifier": "scene_0",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20510,
+                "product_model_node_id": 2051,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键1",
+            "node_identifier": "scene_1",
+            "index": 1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20520,
+                "product_model_node_id": 2052,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键2",
+            "node_identifier": "scene_2",
+            "index": 2,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20530,
+                "product_model_node_id": 2053,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键3",
+            "node_identifier": "scene_3",
+            "index": 3,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20540,
+                "product_model_node_id": 2054,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964900580236677122,
+        "device_number": "B0FD0BE01103C11A",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "双键开关",
+        "product_model_code": "SHC-8Q03-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW03",
+        "product_sub_type_name": "双键开关",
+        "product_model_pic_url": "",
+        "device_name": "双键智能开关",
+        "updateTime": 1757303835957,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2030,
+            "node_name": "单键开关1",
+            "node_identifier": "single_switch_1",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2031,
+                "product_model_node_id": 2030,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 2032,
+                "product_model_node_id": 2030,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click"
+              },
+              {
+                "id": 2033,
+                "product_model_node_id": 2030,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2030,
+            "node_name": "单键开关2",
+            "node_identifier": "single_switch_2",
+            "index": 1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2035,
+                "product_model_node_id": 2035,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 2036,
+                "product_model_node_id": 2035,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click"
+              },
+              {
+                "id": 2037,
+                "product_model_node_id": 2035,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964900418620526593,
+        "device_number": "B0FD0BE011047975",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632834,
+        "room_name": "主卧",
+        "gateway_id": 1964896980596805633,
+        "gateway_number": "2G01_25420305",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "五合一面板",
+        "product_model_code": "SHC-8W01-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW07",
+        "product_sub_type_name": "5合1面板",
+        "product_model_pic_url": "",
+        "device_name": "五合一面板",
+        "updateTime": 1757303765858,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2070,
+            "node_name": "单键开关",
+            "node_identifier": "single_switch",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2072,
+                "product_model_node_id": 2070,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press",
+                "describe": "长按"
+              },
+              {
+                "id": 2071,
+                "product_model_node_id": 2070,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click",
+                "describe": "双击"
+              },
+              {
+                "id": 2070,
+                "product_model_node_id": 2070,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click",
+                "describe": "单击"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964899205879468033,
+        "device_number": "B0FD0BE011047BE8",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632835,
+        "room_name": "客卧",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "五合一面板",
+        "product_model_code": "SHC-8W01-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW07",
+        "product_sub_type_name": "5合1面板",
+        "product_model_pic_url": "",
+        "device_name": "五合一面板",
+        "updateTime": 1757303472432,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2070,
+            "node_name": "单键开关",
+            "node_identifier": "single_switch",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2072,
+                "product_model_node_id": 2070,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press",
+                "describe": "长按"
+              },
+              {
+                "id": 2071,
+                "product_model_node_id": 2070,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click",
+                "describe": "双击"
+              },
+              {
+                "id": 2070,
+                "product_model_node_id": 2070,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click",
+                "describe": "单击"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964899090851909633,
+        "device_number": "B0FD0BE01104A9FE",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632839,
+        "room_name": "玄关",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "单键智能开关",
+        "product_model_code": "SHC-8Q02-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW01",
+        "product_sub_type_name": "单键智能开关",
+        "product_model_pic_url": "",
+        "device_name": "单键智能开关",
+        "updateTime": 1757303435306,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2010,
+            "node_name": "单节点",
+            "node_identifier": "single_node",
+            "index": -1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2010,
+                "product_model_node_id": 2010,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 2011,
+                "product_model_node_id": 2010,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click"
+              },
+              {
+                "id": 2012,
+                "product_model_node_id": 2010,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964898496967823361,
+        "device_number": "B0FD0BE01103B5F5",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632838,
+        "room_name": "中厨",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "0",
+        "product_model_name": "双键开关",
+        "product_model_code": "SHC-8Q03-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW03",
+        "product_sub_type_name": "双键开关",
+        "product_model_pic_url": "",
+        "device_name": "双键智能开关",
+        "updateTime": 1757303308086,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2030,
+            "node_name": "单键开关1",
+            "node_identifier": "single_switch_1",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2031,
+                "product_model_node_id": 2030,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 2032,
+                "product_model_node_id": 2030,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click"
+              },
+              {
+                "id": 2033,
+                "product_model_node_id": 2030,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2030,
+            "node_name": "单键开关2",
+            "node_identifier": "single_switch_2",
+            "index": 1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2035,
+                "product_model_node_id": 2035,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 2036,
+                "product_model_node_id": 2035,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click"
+              },
+              {
+                "id": 2037,
+                "product_model_node_id": 2035,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964898406940053505,
+        "device_number": "B0FD0BE00010FC3B",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892194400632839,
+        "room_name": "玄关",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "四加一面板",
+        "product_model_code": "SHC-8Q04-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW04",
+        "product_sub_type_name": "4+1开关面板",
+        "product_model_pic_url": "",
+        "device_name": "1+4面板",
+        "updateTime": 1757303273122,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2040,
+            "node_name": "单键开关",
+            "node_identifier": "single_switch",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2040,
+                "product_model_node_id": 2040,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 2041,
+                "product_model_node_id": 2040,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click"
+              },
+              {
+                "id": 2042,
+                "product_model_node_id": 2040,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2040,
+            "node_name": "场景按键1",
+            "node_identifier": "scene_1",
+            "index": 1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2045,
+                "product_model_node_id": 2045,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 23606,
+                "product_model_node_id": 2045,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2040,
+            "node_name": "场景按键2",
+            "node_identifier": "scene_2",
+            "index": 2,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2046,
+                "product_model_node_id": 2046,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 23607,
+                "product_model_node_id": 2046,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2040,
+            "node_name": "场景按键3",
+            "node_identifier": "scene_3",
+            "index": 3,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2047,
+                "product_model_node_id": 2047,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 23608,
+                "product_model_node_id": 2047,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2040,
+            "node_name": "场景按键4",
+            "node_identifier": "scene_4",
+            "index": 4,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2048,
+                "product_model_node_id": 2048,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              },
+              {
+                "id": 23605,
+                "product_model_node_id": 2048,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964897842706632706,
+        "device_number": "B0FD0BE01104A75D",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892311216193537,
+        "room_name": "客餐厅",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "4键快充开关面板",
+        "product_model_code": "SHC-8W02-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW08",
+        "product_sub_type_name": "4键快充开关面板",
+        "product_model_pic_url": "",
+        "device_name": "4键情景开关",
+        "updateTime": 1757303150286,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键0",
+            "node_identifier": "scene_0",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20510,
+                "product_model_node_id": 2051,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键1",
+            "node_identifier": "scene_1",
+            "index": 1,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20520,
+                "product_model_node_id": 2052,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键2",
+            "node_identifier": "scene_2",
+            "index": 2,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20530,
+                "product_model_node_id": 2053,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          },
+          {
+            "product_model_id": 2051,
+            "node_name": "场景按键3",
+            "node_identifier": "scene_3",
+            "index": 3,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 20540,
+                "product_model_node_id": 2054,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "device",
+      "deviceInfo": {
+        "type": "device",
+        "device_id": 1964897703540060162,
+        "device_number": "B0FD0BE011047B3F",
+        "home_id": 1863840840378859521,
+        "roomId": 1964892311216193537,
+        "room_name": "客餐厅",
+        "gateway_id": 1964896761654571009,
+        "gateway_number": "2G01_25420142",
+        "onoff": "1",
+        "online": "1",
+        "product_model_name": "五合一面板",
+        "product_model_code": "SHC-8W01-SW",
+        "product_type_code": "SW",
+        "product_type_name": "开关",
+        "product_sub_type_code": "SW07",
+        "product_sub_type_name": "5合1面板",
+        "product_model_pic_url": "",
+        "device_name": "五合一面板",
+        "updateTime": 1757303111108,
+        "li_control_cd": "1",
+        "list": [
+          {
+            "product_model_id": 2070,
+            "node_name": "单键开关",
+            "node_identifier": "single_switch",
+            "index": 0,
+            "productTypeNodeAttrInfoList": [
+              {
+                "id": 2072,
+                "product_model_node_id": 2070,
+                "node_attr_name": "long_press",
+                "node_attr_type": "5",
+                "attr_display_sort": 1,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "long_press",
+                "describe": "长按"
+              },
+              {
+                "id": 2071,
+                "product_model_node_id": 2070,
+                "node_attr_name": "double_click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "double_click",
+                "describe": "双击"
+              },
+              {
+                "id": 2070,
+                "product_model_node_id": 2070,
+                "node_attr_name": "click",
+                "node_attr_type": "5",
+                "attr_display_sort": 2,
+                "node_attr_control_cd": "3",
+                "base_attr_name": "click",
+                "describe": "单击"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "gateway",
+      "gatewayInfo": {
+        "id": 1964896761654571009,
+        "room_name": "客餐厅",
+        "room_id": 1964892311216193537,
+        "count": 39,
+        "state": "1",
+        "isMaster": "0",
+        "online": "1"
+      }
+    },
+    {
+      "type": "wifiAc",
+      "wifiAcResult": {
+        "id": 1964893204275040258,
+        "ac_number": "2A01_24AD0191",
+        "homeId": 1863840840378859521,
+        "roomId": 1954009471070347265,
+        "room_name": "全屋",
+        "ac_account": "2A01_24AD0191",
+        "online": "0",
+        "wifi_frequency_mode": "1",
+        "wifi_5g_name": "Habit@-5G",
+        "wifi_5g_pwd": "Admin@123",
+        "hide_wifi_5g_flag": "0",
+        "has_wifi_5g_pwd_flag": "1",
+        "wifi_24g_name": "NewBee",
+        "wifi_24g_pwd": "NB15574310215",
+        "hide_wifi_24g_flag": "0",
+        "has_wifi_24g_pwd_flag": "1",
+        "wifi_name": "NewBee",
+        "wifi_pwd": "NB15574310215",
+        "has_wifi_pwd_flag": "1",
+        "hide_wifi_flag": "0",
+        "access_device_total": 0
+      }
+    }
+  ]
+}
