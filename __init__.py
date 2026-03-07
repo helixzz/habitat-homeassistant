@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DEFAULT_PORT, DOMAIN, PLATFORMS, UPDATE_INTERVAL_SEC
+from .const import DEFAULT_PORT, DOMAIN, PLATFORMS
 from .api import HabitatAPI
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,12 +34,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             raise UpdateFailed("Gateway returned no devices")
         return devices
 
+    # DataUpdateCoordinator requires update_interval as timedelta, not int
     coordinator = DataUpdateCoordinator(
         hass,
         _LOGGER,
         name=DOMAIN,
         update_method=_async_fetch_devices,
-        update_interval=timedelta(seconds=UPDATE_INTERVAL_SEC),
+        update_interval=timedelta(seconds=60),
     )
     await coordinator.async_config_entry_first_refresh()
 
