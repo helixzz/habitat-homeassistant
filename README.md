@@ -80,6 +80,18 @@ cp __init__.py config_flow.py manifest.json const.py api.py light.py switch.py c
 
 ## 故障排除
 
+### 日志提示 “blocking call to import_module” 或集成目录为 habitat-homeassistant
+
+集成在 Home Assistant 中的**目录名必须为 `habitat`**（与 manifest 的 domain 一致），不能使用带连字符的 `habitat-homeassistant`。若日志里仍出现 `custom_components.habitat-homeassistant`，说明 HA 还在从旧目录加载。
+
+**处理方式**（需全部做完）：
+
+1. **只保留正确目录**：在 `custom_components/` 下只保留文件夹 **`habitat`**（内含本集成的所有 .py 和 manifest.json）。若还存在 **`habitat-homeassistant`** 文件夹，请**直接删除整个文件夹**（不要只改名，避免 HA 仍从旧路径加载）。
+2. **重新添加集成**：在 HA 中进入 **设置 → 设备与服务 → 集成**，找到「栖息地智能家庭」，删除该集成（会移除已配置的网关）。再点击「添加集成」，重新搜索并添加「栖息地智能家庭」，重新填写网关信息。
+3. **重启 HA**：完成上述步骤后重启 Home Assistant。
+
+同时本集成已在 `manifest.json` 中设置 `"import_executor": true`，以减少事件循环阻塞警告。
+
 ### 无法连接网关
 
 1. 确认 Home Assistant 主机和栖息地网关在同一网络

@@ -11,5 +11,6 @@
   "dependencies": [],
   "ssdp": [],
   "zeroconf": [],
-  "dhcp": []
+  "dhcp": [],
+  "import_executor": true
 }
