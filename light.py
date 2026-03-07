@@ -136,8 +136,8 @@ class HabitatLight(LightEntity):
 
     @property
     def supported_color_modes(self):
-        """Return supported color modes."""
-        return {ColorMode.COLOR_TEMP, ColorMode.BRIGHTNESS}
+        """Return supported color modes. CCT light: COLOR_TEMP 已包含亮度调节，不可与 BRIGHTNESS 同时声明。"""
+        return {ColorMode.COLOR_TEMP}
 
     @property
     def device_info(self) -> DeviceInfo:
