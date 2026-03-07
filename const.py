@@ -9,6 +9,9 @@ PLATFORMS = [Platform.LIGHT, Platform.SWITCH, Platform.COVER, Platform.SENSOR]
 DEFAULT_HOST = "172.16.33.72"
 DEFAULT_PORT = 80
 
+# Coordinator polling interval for device list
+UPDATE_INTERVAL_SEC = 60
+
 # API configuration
 API_GET_DEVICES = "/gateway/getgatewaydevice"
 API_SET_DEVICE = "/gateway/setDeviceAttribute"
@@ -23,7 +26,7 @@ DEVICE_TYPE_UH = "UH"          # 地暖
 DEVICE_TYPE_FA = "FA"          # 新风
 DEVICE_TYPE_GA = "GA"          # 燃气报警器
 
-# Model to platform mapping
+# Model to platform mapping (legacy; prefer *_MODELS below)
 MODEL_PLATFORMS = {
     "ZBW4CGJ": Platform.LIGHT,  # 色温灯
     "SHC-6D01-SW": Platform.LIGHT,  # 色温灯 (App)
@@ -43,3 +46,17 @@ MODEL_PLATFORMS = {
     "XF-430": Platform.SENSOR,      # 全热净化新风机
     "JT-HS8CG": Platform.SENSOR,    # 燃气报警器
 }
+
+# Single source of truth: model lists per platform (gateway returns these model strings)
+LIGHT_MODELS = ["ZBW4CGJ", "SHC-6D01-SW"]
+SWITCH_MODELS = [
+    "ZSW5BGJ", "ZSW5GGJ", "ZSW5HGJ", "ZWN04GJ", "CUN01GJ", "8DO",
+    "SHC-8Q02-SW", "SHC-8Q03-SW", "SHC-8W01-SW", "SHC-8W02-SW", "SHC-8Q04-SW",
+]
+COVER_MODELS = ["ZT21LGJ", "EC02000001"]
+# 五合一传感器 (environmental)
+SENSOR_MODELS = ["ZSW5HGJ", "SHC-4J01-SW"]
+# 空调、新风、燃气
+AC_MODELS = ["FP_1020R", "FP_510R", "FP_510L"]
+FA_MODEL = "XF-430"
+GA_MODEL = "JT-HS8CG"

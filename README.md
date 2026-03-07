@@ -22,13 +22,19 @@
 
 ### 方式一：手动安装
 
-1. 复制 `custom_components/habitat` 文件夹到你的 Home Assistant 配置目录下的 `custom_components/` 文件夹中：
+本仓库根目录即为集成代码所在目录。请将以下文件复制到 Home Assistant 配置目录下的 `custom_components/habitat/` 中（若不存在请先创建 `habitat` 文件夹）：
+
+- `__init__.py`、`config_flow.py`、`manifest.json`、`const.py`、`api.py`
+- `light.py`、`switch.py`、`cover.py`、`sensor.py`
+
+例如在仓库根目录执行（将 `config` 替换为你的 HA 配置目录路径）：
 
 ```bash
-cp -r custom_components/habitat /path/to/your/ha/config/custom_components/
+mkdir -p config/custom_components/habitat
+cp __init__.py config_flow.py manifest.json const.py api.py light.py switch.py cover.py sensor.py config/custom_components/habitat/
 ```
 
-2. 重启 Home Assistant
+然后重启 Home Assistant。
 
 ### 方式二：使用 HACS (推荐)
 
