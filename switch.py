@@ -1,6 +1,8 @@
 """Switch platform for 栖息地智能家庭."""
 
+import asyncio
 import logging
+import time
 from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
@@ -117,15 +119,16 @@ class HabitatSwitch(SwitchEntity):
         self._device_data = device_data
         self._switch_index = switch_index
         self._state = False
-        
+        self._last_control_time: float = 0.0
+
         self._update_state()
 
     def _update_state(self):
-        """Update state from device data."""
+        """Update state from device data；控制后 10s 内不覆盖，与灯/窗帘一致。"""
+        if time.monotonic() - self._last_control_time < 10.0:
+            return
         dev_attrs = self._device_data.get("dev_attrs", [])
-        
         attr_name = f"state{self._switch_index}" if self._switch_index > 0 else "state0"
-        
         for attr in dev_attrs:
             if attr.get("name") == attr_name:
                 self._state = bool(attr.get("value", 0))
@@ -166,20 +169,41 @@ class HabitatSwitch(SwitchEntity):
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn on the switch."""
-        success = await self._get_api().set_switch(self._device_uid, 1, self._switch_index)
-        
-        if success:
-            self._state = True
-            self.async_write_ha_state()
+        """先乐观更新界面，网关在后台执行。"""
+        self._state = True
+        self._last_control_time = time.monotonic()
+        self.async_write_ha_state()
+        self.hass.async_create_task(self._send_switch_and_sync(1))
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn off the switch."""
-        success = await self._get_api().set_switch(self._device_uid, 0, self._switch_index)
-        
-        if success:
-            self._state = False
+        """先乐观更新界面，网关在后台执行。"""
+        self._state = False
+        self._last_control_time = time.monotonic()
+        self.async_write_ha_state()
+        self.hass.async_create_task(self._send_switch_and_sync(0))
+
+    async def _send_switch_and_sync(self, state: int) -> None:
+        """后台：发开关指令，失败则拉网关回滚界面。"""
+        success = await self._get_api().set_switch(self._device_uid, state, self._switch_index)
+        if not success:
+            self._last_control_time = 0.0
+            await self._coordinator.async_request_refresh()
+            for device in self._coordinator.data or []:
+                if device.get("deviceUid") == self._device_uid:
+                    self._device_data = device
+                    self._update_state()
+                    break
             self.async_write_ha_state()
+            return
+        await asyncio.sleep(4.0)
+        await self._coordinator.async_request_refresh()
+        self._last_control_time = 0.0
+        for device in self._coordinator.data or []:
+            if device.get("deviceUid") == self._device_uid:
+                self._device_data = device
+                self._update_state()
+                break
+        self.async_write_ha_state()
 
     async def async_update(self) -> None:
         """Update the entity from coordinator data."""

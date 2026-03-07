@@ -52,40 +52,40 @@ async def async_setup_entry(
                 name = attr.get("value", device_uid)
                 break
         
-        # 五合一传感器 (environmental sensor)
+        # 五合一传感器：实体名仅保留类型（温度、湿度等），设备名单独传入 device_info
         if model in SENSOR_MODELS and online:
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 温度", device, "temperature", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "温度", device, "temperature", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 湿度", device, "humidity", SensorDeviceClass.HUMIDITY, PERCENTAGE)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "湿度", device, "humidity", SensorDeviceClass.HUMIDITY, PERCENTAGE)
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} PM2.5", device, "PM2_5U", SensorDeviceClass.PM25, "μg/m³")
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "PM2.5", device, "PM2_5U", SensorDeviceClass.PM25, "μg/m³")
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} PM10", device, "PM10U", SensorDeviceClass.PM10, "μg/m³")
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "PM10", device, "PM10U", SensorDeviceClass.PM10, "μg/m³")
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} CO2", device, "CO2M", SensorDeviceClass.CO2, CONCENTRATION_PARTS_PER_MILLION)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "CO2", device, "CO2M", SensorDeviceClass.CO2, CONCENTRATION_PARTS_PER_MILLION)
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} AQI", device, "homeAQI", SensorDeviceClass.AQI, None)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "AQI", device, "homeAQI", SensorDeviceClass.AQI, None)
             )
         
         # 空调传感器
         elif model in AC_MODELS and online:
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 当前温度", device, "temperature", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "当前温度", device, "temperature", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 设定温度", device, "roomSettemp", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "设定温度", device, "roomSettemp", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
             )
         
         # 新风机
         elif model == FA_MODEL and online:
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 湿度", device, "humidity", SensorDeviceClass.HUMIDITY, PERCENTAGE)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "湿度", device, "humidity", SensorDeviceClass.HUMIDITY, PERCENTAGE)
             )
             filters_hours = None
             for attr in dev_attrs:
@@ -93,16 +93,16 @@ async def async_setup_entry(
                     filters_hours = attr.get("value")
             if filters_hours is not None:
                 sensors.append(
-                    HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 滤芯使用小时", device, "newWindFilterelementServicehours", None, "hours")
+                    HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "滤芯使用小时", device, "newWindFilterelementServicehours", None, "hours")
                 )
         
         # 燃气报警器
         elif model == GA_MODEL and online:
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 气体状态", device, "sensor_gas_state", None, None)
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "气体状态", device, "sensor_gas_state", None, None)
             )
             sensors.append(
-                HabitatSensor(api, coordinator, gateway_identifier, device_uid, f"{name} 气体浓度", device, "sensor_gas_concentration", None, "ppm")
+                HabitatSensor(api, coordinator, gateway_identifier, device_uid, name, "气体浓度", device, "sensor_gas_concentration", None, "ppm")
             )
     
     async_add_entities(sensors)
@@ -117,17 +117,19 @@ class HabitatSensor(SensorEntity):
         coordinator: DataUpdateCoordinator,
         gateway_identifier: str,
         device_uid: str,
+        device_name: str,
         name: str,
         device_data: dict,
         attr_name: str,
         device_class: str,
         unit: str,
     ):
-        """Initialize the sensor."""
+        """Initialize the sensor. device_name 为设备显示名（如 书房面板），name 为实体名（如 温度、湿度）。"""
         self._api = api
         self._coordinator = coordinator
         self._gateway_identifier = gateway_identifier
         self._device_uid = device_uid
+        self._device_name = device_name
         self._name = name
         self._device_data = device_data
         self._attr_name = attr_name
@@ -186,7 +188,7 @@ class HabitatSensor(SensorEntity):
         """Return device info."""
         return DeviceInfo(
             identifiers={(DOMAIN, self._device_uid)},
-            name=self._name.split(" ")[0],
+            name=self._device_name,
             manufacturer="栖息地",
             model="传感器",
             via_device=(DOMAIN, self._gateway_identifier),

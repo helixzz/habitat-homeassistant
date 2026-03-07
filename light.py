@@ -189,8 +189,9 @@ class HabitatLight(LightEntity):
         await self._refresh_and_write_state()
 
     async def _refresh_and_write_state(self) -> None:
-        """后台从 coordinator 拉取设备数据并更新实体（控制后 10s 内 _update_state 不会覆盖开关/亮度）。"""
+        """后台拉取设备数据并更新实体；本次为延迟同步，允许覆盖。"""
         await self._coordinator.async_request_refresh()
+        self._last_control_time = 0.0
         for device in self._coordinator.data or []:
             if device.get("deviceUid") == self._device_uid:
                 self._device_data = device
