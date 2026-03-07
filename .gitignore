@@ -1,4 +1,5 @@
-# Test / local
+# Test / local (test_gateway.py contains credentials)
+test_gateway.py
 devices_sample.json
 __pycache__/
 *.py[cod]
