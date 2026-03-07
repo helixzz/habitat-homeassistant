@@ -195,9 +195,8 @@ class HabitatCover(CoverEntity):
             self._start_position_polling()
 
     async def async_stop_cover(self, **kwargs: Any) -> None:
-        """停止：下发当前对应的网关 level。"""
-        gw = self._display_to_gateway_level(self._level)
-        success = await self._api.set_cover(self._device_uid, level=gw)
+        """停止：下发 curtainState=2（停止），网关据此停止电机。"""
+        success = await self._api.set_cover(self._device_uid, state=2)
         if success:
             await self._refresh_from_gateway()
             self.async_write_ha_state()

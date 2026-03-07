@@ -95,27 +95,23 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def async_get_options_flow(
         config_entry: config_entries.ConfigEntry,
     ) -> HabitatOptionsFlow:
-        return HabitatOptionsFlow(config_entry)
+        return HabitatOptionsFlow()
 
 
 class HabitatOptionsFlow(config_entries.OptionsFlow):
     """栖息地集成的选项流程：窗帘反向。"""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
-
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """窗帘反向：勾选则 HA 开=物理关、HA 关=物理开。"""
-        covers = _get_cover_devices(self.hass, self.config_entry.entry_id)
-        inverted = set(
-            self.config_entry.options.get("inverted_cover_uids") or []
-        )
+        entry = self.config_entry
+        covers = _get_cover_devices(self.hass, entry.entry_id)
+        inverted = set(entry.options.get("inverted_cover_uids") or [])
         if not covers:
             data_schema = vol.Schema({vol.Optional("_no_covers", default=True): bool})
             if user_input is not None:
-                return self.async_create_entry(title="", data=self.config_entry.options or {})
+                return self.async_create_entry(title="", data=entry.options or {})
             return self.async_show_form(
                 step_id="init",
                 data_schema=data_schema,
