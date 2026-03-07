@@ -3,7 +3,16 @@
 from homeassistant.const import Platform
 
 DOMAIN = "habitat"
-PLATFORMS = [Platform.LIGHT, Platform.SWITCH, Platform.COVER, Platform.SENSOR, Platform.NUMBER]
+PLATFORMS = [
+    Platform.LIGHT,
+    Platform.SWITCH,
+    Platform.COVER,
+    Platform.SENSOR,
+    Platform.NUMBER,
+    Platform.CLIMATE,
+    Platform.HUMIDIFIER,
+    Platform.FAN,
+]
 
 # Default configuration
 DEFAULT_HOST = "172.16.33.72"

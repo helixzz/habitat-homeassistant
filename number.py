@@ -13,35 +13,10 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import HabitatAPI
-from .const import (
-    DOMAIN,
-    PANEL_5IN1_MODELS,
-    PANEL_5IN1_MAIN_ATTRS,
-    FAN_LEVEL_AUTO,
-)
+from .const import DOMAIN, PANEL_5IN1_MODELS, FAN_LEVEL_AUTO
+from .helpers import get_attr_value, is_main_panel
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def _get_attr_value(dev_attrs: list, attr_name: str):
-    """从 dev_attrs 中取第一个匹配 name 的 value。"""
-    for a in dev_attrs:
-        if a.get("name") == attr_name:
-            return a.get("value")
-    return None
-
-
-def _is_main_panel(dev_attrs: list) -> bool:
-    """主面板：滤芯或加湿器使用小时任一项存在且非零。"""
-    for name in PANEL_5IN1_MAIN_ATTRS:
-        v = _get_attr_value(dev_attrs, name)
-        if v is not None:
-            try:
-                if int(v) != 0:
-                    return True
-            except (TypeError, ValueError):
-                pass
-    return False
 
 
 async def async_setup_entry(
@@ -74,7 +49,7 @@ async def async_setup_entry(
                 name = attr.get("value", device_uid)
                 break
 
-        main = _is_main_panel(dev_attrs)
+        main = is_main_panel(dev_attrs)
 
         numbers.append(
             HabitatNumber(
@@ -203,6 +178,8 @@ class HabitatNumber(NumberEntity):
         self._scale = scale
         self._mode_attr = mode_attr
         self._mode_value_auto = mode_value_auto
+        # 与 Climate/Humidifier/Fan 重复，默认隐藏；可在 设置→实体 中取消隐藏
+        self._attr_entity_registry_visible_default = False
         self._update_state()
 
     def _get_api(self) -> HabitatAPI:
@@ -220,7 +197,7 @@ class HabitatNumber(NumberEntity):
     def _update_state(self) -> None:
         """从 device_data 更新当前显示值。风速 0+自动模式时显示为 7。"""
         dev_attrs = self._device_data.get("dev_attrs", [])
-        raw = _get_attr_value(dev_attrs, self._attr_name)
+        raw = get_attr_value(dev_attrs, self._attr_name)
         if raw is None:
             self._attr_native_value = None
             return
@@ -231,7 +208,7 @@ class HabitatNumber(NumberEntity):
             else:
                 self._attr_native_value = float(v)
                 if self._mode_attr and self._mode_value_auto is not None:
-                    mode_raw = _get_attr_value(dev_attrs, self._mode_attr)
+                    mode_raw = get_attr_value(dev_attrs, self._mode_attr)
                     if mode_raw is not None and int(mode_raw) == self._mode_value_auto and v == 0:
                         self._attr_native_value = float(FAN_LEVEL_AUTO)
         except (TypeError, ValueError):

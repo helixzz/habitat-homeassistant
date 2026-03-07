@@ -1,0 +1,154 @@
+# Habitat Smart Home – Home Assistant Integration
+
+![Project](https://img.shields.io/badge/project-habitat-blue)
+![HA Version](https://img.shields.io/badge/Home%20Assistant-2024.1%2B-green)
+![Python](https://img.shields.io/badge/Python-3.10%2B-yellow)
+
+[简体中文](./README.md) | English
+
+## Supported features
+
+| Device type | Features | Status |
+|------------|----------|--------|
+| CCT Light | On/off, brightness, color temperature | ✅ |
+| Smart switch | On/off (multi‑key / scene / 5‑in‑1 panel buttons hidden by default) | ✅ |
+| Motorized curtain | Open/close/stop, position | ✅ |
+| 5‑in‑1 environment sensor | Temperature, humidity, PM2.5, PM10, CO2, AQI | ✅ |
+| 5‑in‑1 panel · AC | Climate entity: current/target temperature, AC fan (off / 1–6 / auto) | ✅ |
+| 5‑in‑1 panel · Humidifier | Humidifier entity: current/target humidity (Fresh Air humidification) | ✅ |
+| 5‑in‑1 panel · Fresh Air | Main panel only: Fan entity (Fresh Air supply 0–6 / auto) | ✅ |
+| 5‑in‑1 panel · Floor heating | Main panel only: floor heating state, filter/humidifier service hours (read‑only) | ✅ |
+| AC (water unit indoor) | Current temperature, set temperature (read‑only sensors) | ✅ |
+| Fresh Air unit | Humidity, filter service hours | ✅ |
+| Gas alarm | Gas state, concentration | ✅ |
+
+The 5‑in‑1 panel acts as AC, Fresh Air (main panel controls whole‑house supply), and floor heating controller. Target temperature, humidity, and fan speeds are exposed as native **Climate**, **Humidifier**, and **Fan** entities. Optional Number entities are hidden by default in the entity registry; you can enable them under **Settings → Entities**.
+
+**Multiple gateways** are supported: you can add primary and child gateways in the integration options; devices use the API of their assigned gateway.
+
+## Installation
+
+### Option 1: Manual installation
+
+Copy the following from this repository into your Home Assistant config directory under `custom_components/habitat/` (create the `habitat` folder if it does not exist).
+
+**Required files:**
+
+- `__init__.py`, `config_flow.py`, `manifest.json`, `const.py`, `api.py`
+- `helpers.py`
+- `light.py`, `switch.py`, `cover.py`, `sensor.py`
+- `number.py`, `climate.py`, `humidifier.py`, `fan.py`
+- The `translations/` directory (including `en.json` for English entity names)
+
+**Optional:**
+
+- `brand/` directory: for integration logo in HA (requires HA 2026.3+). See `brand/README.md`.
+
+Example (replace `config` with your HA config path):
+
+```bash
+mkdir -p config/custom_components/habitat
+cp __init__.py config_flow.py manifest.json const.py api.py helpers.py \
+   light.py switch.py cover.py sensor.py number.py climate.py humidifier.py fan.py \
+   config/custom_components/habitat/
+cp -r translations config/custom_components/habitat/
+cp -r brand config/custom_components/habitat/ 2>/dev/null || true
+```
+
+Then restart Home Assistant.
+
+### Option 2: HACS (recommended)
+
+> HACS support coming soon
+
+## Configuration
+
+### First-time setup
+
+1. Open Home Assistant
+2. Go to **Settings** → **Devices & services**
+3. Click **Add integration**
+4. Search for **栖息地智能家庭** (Habitat Smart Home)
+5. Enter:
+
+| Field | Description | Example |
+|-------|-------------|--------|
+| Gateway IP | Local IP of the Habitat gateway | `172.16.33.72` |
+| Gateway UID | Gateway serial / UID | `2G01_25420142` |
+| API Key | Authentication key | (see below) |
+| Password | Authentication password | (see below) |
+
+After setup, you can add child gateways in the integration **Options** (multiple gateways).
+
+### Getting API credentials
+
+Use your browser’s developer tools (F12) to capture the login request when accessing the Zigbee gateway’s web interface over HTTP. Use the parameters from that request:
+
+```json
+{
+  "uid": "2G01_25420142",
+  "key": "90ff179ea717b44e91ab3100000000006f42f0000000000ae0000000000a812a",
+  "pwd": "FDCE1234567890123456710000000000"
+}
+```
+
+## Devices and entities
+
+The integration discovers and creates:
+
+- **Lights**: ceiling lights, strips, etc.
+- **Switches**: smart switches, scene panels, 5‑in‑1 panel keys (switch entities for scene/5‑in‑1 panels are hidden by default; you can unhide them in the entity registry)
+- **Covers**: motorized curtains
+- **Sensors**: 5‑in‑1 environment (temp, humidity, PM2.5/PM10, CO2, AQI), AC temperature, Fresh Air filter hours, gas alarm
+- **5‑in‑1 panel**: each panel has a **Climate** (AC) and **Humidifier** (humidity target) entity; the **main panel** also has a **Fan** (Fresh Air supply) and floor heating state plus filter/humidifier service hour sensors. The main panel is detected automatically (filter or humidifier service hours non‑zero).
+
+## Troubleshooting
+
+### Log shows “blocking call to import_module” or integration path is habitat-homeassistant
+
+The integration **folder name must be `habitat`** (same as the manifest domain), not `habitat-homeassistant`. If logs still reference `custom_components.habitat-homeassistant`, HA is loading from the old path.
+
+**Fix (do all steps):**
+
+1. **Use only the correct folder**: Under `custom_components/` keep only **`habitat`** with all .py files, manifest.json, translations, etc. If **`habitat-homeassistant`** exists, **delete that entire folder** (do not just rename).
+2. **Re-add the integration**: **Settings → Devices & services → Integrations**, remove “栖息地智能家庭”, then add it again and enter gateway details.
+3. **Restart Home Assistant.**
+
+The integration sets `"import_executor": true` in `manifest.json` to reduce event loop blocking warnings.
+
+### Cannot connect to gateway
+
+1. Ensure the Home Assistant host and Habitat gateway are on the same network
+2. Check the gateway IP
+3. Try `ping <gateway-ip>`
+
+### Device not online
+
+1. Confirm the device is online in the Habitat app
+2. Restart the gateway
+3. Reload the integration
+
+## Development
+
+### Local development
+
+Clone or copy this repo into `custom_components/habitat/`, then restart HA or reload the integration after changes. Enabling HA developer mode helps with logs.
+
+### Adding new device types
+
+Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MODELS` lists.
+
+## Changelog
+
+### v0.1.0 (2026-03-07)
+
+- Initial release: lights, switches, covers, sensors
+- Later: 5‑in‑1 Climate/Humidifier/Fan/Number, floor heating state, multiple gateways, scene/5‑in‑1 switches hidden by default, English translations (e.g. Fresh Air)
+
+## License
+
+MIT License
+
+---
+
+*This integration is not officially affiliated with Habitat Smart Home; it is developed by the community.*
