@@ -1,5 +1,6 @@
 """Light platform for 栖息地智能家庭."""
 
+import asyncio
 import logging
 import time
 from typing import Any
@@ -180,7 +181,12 @@ class HabitatLight(LightEntity):
             self.async_write_ha_state()
             return
         # 延迟 4 秒再拉网关，给网关时间更新设备列表，减少用旧数据覆盖界面
-        self.hass.async_call_later(4.0, lambda _: self.hass.async_create_task(self._refresh_and_write_state()))
+        self.hass.async_create_task(self._delayed_refresh())
+
+    async def _delayed_refresh(self) -> None:
+        """等待 4 秒后拉取网关状态并写回实体。"""
+        await asyncio.sleep(4.0)
+        await self._refresh_and_write_state()
 
     async def _refresh_and_write_state(self) -> None:
         """后台从 coordinator 拉取设备数据并更新实体（控制后 10s 内 _update_state 不会覆盖开关/亮度）。"""
@@ -207,7 +213,7 @@ class HabitatLight(LightEntity):
             self._state = old_state
             self.async_write_ha_state()
             return
-        self.hass.async_call_later(4.0, lambda _: self.hass.async_create_task(self._refresh_and_write_state()))
+        self.hass.async_create_task(self._delayed_refresh())
 
     async def async_update(self) -> None:
         """Update the entity from coordinator data."""
