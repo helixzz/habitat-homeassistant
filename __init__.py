@@ -1,6 +1,7 @@
 """The 栖息地智能家庭 integration."""
 
 import logging
+from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PORT
@@ -38,7 +39,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER,
         name=DOMAIN,
         update_method=_async_fetch_devices,
-        update_interval=UPDATE_INTERVAL_SEC,
+        update_interval=timedelta(seconds=UPDATE_INTERVAL_SEC),
     )
     await coordinator.async_config_entry_first_refresh()
 
