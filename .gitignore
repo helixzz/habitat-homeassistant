@@ -1,5 +1,8 @@
 # Test / local (test_gateway.py contains credentials)
 test_gateway.py
 devices_sample.json
+
+# App API 响应样本（含敏感信息，不提交）
+data-samples/*.json
 __pycache__/
 *.py[cod]
