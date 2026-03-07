@@ -197,7 +197,7 @@ class HabitatLight(LightEntity):
             color_temp=send_color_temp,
         )
         if success:
-            # 先乐观更新，界面立即反映
+            # 先乐观更新并立即写状态，使界面 1 秒内更新；刷新放到后台，不阻塞返回
             self._state = True
             if level_ha is not None:
                 self._brightness = level_ha
@@ -206,14 +206,18 @@ class HabitatLight(LightEntity):
             if color_temp_mired is not None:
                 self._color_temp_mired = color_temp_mired
             self.async_write_ha_state()
-            # 再从网关拉取一次，保证与设备一致
-            await self._coordinator.async_request_refresh()
-            for device in self._coordinator.data or []:
-                if device.get("deviceUid") == self._device_uid:
-                    self._device_data = device
-                    self._update_state()
-                    break
-            self.async_write_ha_state()
+            # 后台拉取网关数据并同步一次，不 await，避免前端等 10~30s 才刷新
+            self.hass.async_create_task(self._refresh_and_write_state())
+
+    async def _refresh_and_write_state(self) -> None:
+        """后台从 coordinator 拉取最新设备数据并更新实体状态（用于控制后与网关同步）。"""
+        await self._coordinator.async_request_refresh()
+        for device in self._coordinator.data or []:
+            if device.get("deviceUid") == self._device_uid:
+                self._device_data = device
+                self._update_state()
+                break
+        self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the light."""
@@ -221,13 +225,7 @@ class HabitatLight(LightEntity):
         if success:
             self._state = False
             self.async_write_ha_state()
-            await self._coordinator.async_request_refresh()
-            for device in self._coordinator.data or []:
-                if device.get("deviceUid") == self._device_uid:
-                    self._device_data = device
-                    self._update_state()
-                    break
-            self.async_write_ha_state()
+            self.hass.async_create_task(self._refresh_and_write_state())
 
     async def async_update(self) -> None:
         """Update the entity from coordinator data."""
