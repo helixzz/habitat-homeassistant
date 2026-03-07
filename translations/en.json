@@ -1,0 +1,9 @@
+{
+  "entity": {
+    "fan": {
+      "fresh_air": {
+        "name": "Fresh Air"
+      }
+    }
+  }
+}
