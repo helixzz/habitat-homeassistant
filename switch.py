@@ -12,9 +12,31 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import HabitatAPI
-from .const import DOMAIN, SWITCH_MODELS
+from .const import (
+    DOMAIN,
+    SWITCH_MODELS,
+    SWITCH_CHANNEL_NAME_ATTR_PATTERNS,
+    SWITCH_MODEL_CHANNEL_LABELS,
+    SWITCH_CHANNEL_FALLBACK,
+)
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _channel_label_for_switch(dev_attrs: list, model: str, channel_index: int) -> str:
+    """从 dev_attrs 或模型默认值解析该通道的显示名称（如 按键1、情景、左键）。"""
+    for pattern in SWITCH_CHANNEL_NAME_ATTR_PATTERNS:
+        attr_name = pattern.format(i=channel_index)
+        for attr in dev_attrs:
+            if attr.get("name") == attr_name:
+                val = attr.get("value") or attr.get("valueStr")
+                if val is not None and str(val).strip():
+                    return str(val).strip()
+                break
+    defaults = SWITCH_MODEL_CHANNEL_LABELS.get(model)
+    if defaults and 0 <= channel_index < len(defaults):
+        return defaults[channel_index]
+    return SWITCH_CHANNEL_FALLBACK.format(i=channel_index + 1)
 
 
 async def async_setup_entry(
@@ -56,7 +78,8 @@ async def async_setup_entry(
             
             if switch_count > 1:
                 for i in range(switch_count):
-                    switch_name = f"{name} {i+1}" if switch_count > 1 else name
+                    channel_label = _channel_label_for_switch(dev_attrs, model, i)
+                    switch_name = f"{name} {channel_label}"
                     switches.append(
                         HabitatSwitch(api, coordinator, gateway_identifier, device_uid, switch_name, device, i)
                     )
