@@ -9,7 +9,6 @@ from homeassistant.components.light import (
     LightEntity,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_BRIGHTNESS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -154,7 +153,7 @@ class HabitatLight(LightEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the light."""
         state = 1
-        level = kwargs.get(ATTR_BRIGHTNESS)
+        level = kwargs.get("brightness")
         color_temp_kelvin = kwargs.get(ATTR_COLOR_TEMP_KELVIN)
         color_temp_mired = (
             int(color_temperature_kelvin_to_mired(color_temp_kelvin))
