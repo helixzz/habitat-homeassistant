@@ -65,19 +65,17 @@ class HabitatCover(CoverEntity):
         self._device_uid = device_uid
         self._name = name
         self._device_data = device_data
-        self._state = 2  # 0=open, 1=closing, 2=closed
-        self._level = 0  # 0-255, 0=open
-        
+        self._state = 2  # 网关: 0=open, 1=closing, 2=closed
+        self._level = 0  # 网关 0-255（与电机方向一致；集成内统一为：0=物理关闭, 255=物理打开）
+
         self._update_state()
 
     def _update_state(self):
         """Update state from device data."""
         dev_attrs = self._device_data.get("dev_attrs", [])
-        
         for attr in dev_attrs:
             attr_name = attr.get("name")
             attr_value = attr.get("value")
-            
             if attr_name == "curtainState":
                 self._state = attr_value
             elif attr_name == "curtainLevel":
@@ -95,16 +93,13 @@ class HabitatCover(CoverEntity):
 
     @property
     def is_closed(self) -> bool:
-        """Return if cover is closed."""
-        # 0 = open, 2 = closed
-        return self._state == 2
+        """Return if cover is closed. 与电机方向统一：level 0 = 关闭。"""
+        return self._level == 0
 
     @property
     def current_cover_position(self) -> int:
-        """Return cover position (0-100)."""
-        # level 255 = fully closed, 0 = fully open
-        position = int((self._level / 255) * 100)
-        return 100 - position  # Invert: HA: 0=closed, 100=open
+        """Return cover position (0-100). HA: 0=closed, 100=open；网关 level 0=关 255=开。"""
+        return int((self._level / 255) * 100) if self._level is not None else 0
 
     @property
     def supported_features(self) -> CoverEntityFeature:
@@ -128,23 +123,19 @@ class HabitatCover(CoverEntity):
         )
 
     async def async_open_cover(self, **kwargs: Any) -> None:
-        """Open the cover."""
-        # state 0 = open
-        success = await self._api.set_cover(self._device_uid, state=0, level=0)
-        
-        if success:
-            self._state = 0
-            self._level = 0
-            self.async_write_ha_state()
-
-    async def async_close_cover(self, **kwargs: Any) -> None:
-        """Close the cover."""
-        # state 1 = close
+        """Open the cover. 电机方向与 HA 一致：开 → 发 level=255（网关关方向即物理开）。"""
         success = await self._api.set_cover(self._device_uid, state=1, level=255)
-        
         if success:
             self._state = 2
             self._level = 255
+            self.async_write_ha_state()
+
+    async def async_close_cover(self, **kwargs: Any) -> None:
+        """Close the cover. 电机方向与 HA 一致：关 → 发 level=0（网关开方向即物理关）。"""
+        success = await self._api.set_cover(self._device_uid, state=0, level=0)
+        if success:
+            self._state = 0
+            self._level = 0
             self.async_write_ha_state()
 
     async def async_stop_cover(self, **kwargs: Any) -> None:
@@ -155,10 +146,9 @@ class HabitatCover(CoverEntity):
             self.async_write_ha_state()
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
-        """Move cover to a specific position. HA: 0=closed, 100=open; gateway level: 0=open, 255=closed."""
+        """Move cover to a specific position. HA: 0=closed, 100=open；网关 level 0=关 255=开。"""
         position = kwargs.get("position", 0)
-        # position 0 -> level 255, position 100 -> level 0
-        level = int((100 - position) / 100 * 255)
+        level = int((position / 100) * 255)
         level = max(0, min(255, level))
         success = await self._api.set_cover(self._device_uid, level=level)
         if success:
