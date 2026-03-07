@@ -24,7 +24,7 @@
 
 ## 二、App API（searchDeviceConditionByHome）
 
-样本文件 `searchDeviceConditionByHome.json` 为 **手机 App** 与服务器通信时获取的「按家庭/房间的设备列表」，与网关 API 结构不同，但可用于对齐命名与型号。
+样本文件 `*.json` 为 **手机 App** 与服务器通信时获取的「按家庭/房间的设备列表」，与网关 API 结构不同，但可用于对齐命名与型号。
 
 ### 顶层结构
 
