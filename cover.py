@@ -136,8 +136,8 @@ class HabitatCover(CoverEntity):
 
     @property
     def is_closed(self) -> bool:
-        """Return if cover is closed. 与电机方向统一：level 0 = 关闭。"""
-        return self._level == 0
+        """Return if cover is closed. 与显示位置一致：0% 即视为关闭，避免 level 舍入后仍显示「已打开」。"""
+        return self.current_cover_position == 0
 
     @property
     def current_cover_position(self) -> int:
