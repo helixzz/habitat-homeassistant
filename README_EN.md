@@ -13,6 +13,7 @@
 | CCT Light | On/off, brightness, color temperature | ✅ |
 | Smart switch | On/off (multi‑key / scene / 5‑in‑1 panel buttons hidden by default) | ✅ |
 | Motorized curtain | Open/close/stop, position | ✅ |
+| Motorized curtain · direction | Normal/reversed (`curtainDir`, not exposed in the App — see below) | ✅ |
 | 5‑in‑1 environment sensor | Temperature, humidity, PM2.5, PM10, CO2, AQI | ✅ |
 | 5‑in‑1 panel · AC | Climate entity: current/target temperature, AC fan (off / 1–6 / auto) | ✅ |
 | 5‑in‑1 panel · Humidifier | Humidifier entity: current/target humidity (Fresh Air humidification) | ✅ |
@@ -37,7 +38,7 @@ Copy the following from this repository into your Home Assistant config director
 - `__init__.py`, `config_flow.py`, `manifest.json`, `const.py`, `api.py`
 - `helpers.py`
 - `light.py`, `switch.py`, `cover.py`, `sensor.py`
-- `number.py`, `climate.py`, `humidifier.py`, `fan.py`
+- `number.py`, `climate.py`, `humidifier.py`, `fan.py`, `select.py`
 - The `translations/` directory (including `en.json` for English entity names)
 
 **Optional:**
@@ -49,7 +50,7 @@ Example (replace `config` with your HA config path):
 ```bash
 mkdir -p config/custom_components/habitat
 cp __init__.py config_flow.py manifest.json const.py api.py helpers.py \
-   light.py switch.py cover.py sensor.py number.py climate.py humidifier.py fan.py \
+   light.py switch.py cover.py sensor.py number.py climate.py humidifier.py fan.py select.py \
    config/custom_components/habitat/
 cp -r translations config/custom_components/habitat/
 cp -r brand config/custom_components/habitat/ 2>/dev/null || true
@@ -98,9 +99,41 @@ The integration discovers and creates:
 
 - **Lights**: ceiling lights, strips, etc.
 - **Switches**: smart switches, scene panels, 5‑in‑1 panel keys (switch entities for scene/5‑in‑1 panels are hidden by default; you can unhide them in the entity registry)
-- **Covers**: motorized curtains
+- **Covers**: motorized curtains (each curtain device also gets a **direction** select entity, see below)
 - **Sensors**: 5‑in‑1 environment (temp, humidity, PM2.5/PM10, CO2, AQI), AC temperature, Fresh Air filter hours, gas alarm
 - **5‑in‑1 panel**: each panel has a **Climate** (AC) and **Humidifier** (humidity target) entity; the **main panel** also has a **Fan** (Fresh Air supply) and floor heating state plus filter/humidifier service hour sensors. The main panel is detected automatically (filter or humidifier service hours non‑zero).
+
+## Curtain direction: fixing a curtain installed the wrong way
+
+A curtain motor's direction (normal/reversed) is stored **inside the motor**. Neither the Habitat App nor the hardware panels expose it — but the gateway's local API attribute `curtainDir` is exactly that parameter:
+
+| Attribute | Meaning | Values |
+|-----------|---------|--------|
+| `curtainDir` | Motor direction | `0` = normal, `1` = reversed |
+
+The write takes effect immediately and the motor re-calibrates its travel: if the direction actually changes it usually performs **one full run**; if it does not change, it only jogs slightly to acknowledge. The setting lives in the motor, so it survives gateway restarts and integration reloads.
+
+**From HA**: every curtain device gets a “窗帘方向” (curtain direction) select entity with Normal/Reversed options.
+
+- The gateway **always reports `curtainDir` as 0** (it does not read the motor's stored value), so the entity state reflects the last write and is restored by `RestoreEntity` after a HA restart.
+- This is a **hardware-level** fix; the integration option “反向 - curtain” is a **software-level** fix. Enabling both cancels out — normally you want only one, preferably the direction entity so the App and hardware panels become correct too.
+
+**Outside HA** (script shipped in this repo):
+
+```bash
+# list all curtains on the gateway
+python3 tools/set_curtain_direction.py --host 172.16.33.27 --list
+
+# set reversed (1) / restore normal (0)
+python3 tools/set_curtain_direction.py --host 172.16.33.27 \
+    --device B0FD0BE011051113 --direction 1
+```
+
+The script reads `gatewayPwd` from the gateway's `getgatewayproperties` (that endpoint needs no authentication — see the security note below).
+
+**How it works**: the gateway maps `curtainDir` to manufacturer-specific command `0xf1` of the Zigbee Window Covering cluster (0x0102); `curtainState` maps to the standard Up/Open(0x00)/Down/Close(0x01)/Stop(0x02) commands and `curtainLevel` to Level Control Move to Level. The open/close direction is decided by `curtainDir` inside the motor, independent of the App/gateway — which is why a software-only inversion in HA cannot fix the App or the panels.
+
+> ⚠️ **Security note**: the gateway's `/gateway/getgatewayproperties` returns `gatewayPwd` with no authentication, and `/gateway/setDeviceAttribute` only needs the static key plus that password to control devices. In other words, **anyone on the same LAN can read the password and control your Habitat devices**. If that matters to you, put the gateway on a separate VLAN / IoT network.
 
 ## Troubleshooting
 
@@ -144,6 +177,7 @@ Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MO
 
 - Initial release: lights, switches, covers, sensors
 - Later: 5‑in‑1 Climate/Humidifier/Fan/Number, floor heating state, multiple gateways, scene/5‑in‑1 switches hidden by default, English translations (e.g. Fresh Air)
+- Curtain direction: new “curtain direction” select entity (writes gateway `curtainDir`, hardware-level fix for reversed curtains) and `tools/set_curtain_direction.py`
 
 ## License
 

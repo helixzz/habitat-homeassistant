@@ -19,7 +19,10 @@
 | `dev_attrs` | 属性数组，每项 `{ "name": "属性名", "value": 值 }`（数值或字符串，未见 `valueStr`） |
 | `childGatewayId` | 可选，设备当前所属子网关 UID；无则表示在主网关上。控制指令需发往该网关，集成在每次控制时按此字段解析 API，设备迁移网关后无需重载 |
 
-**窗帘**：`curtainState`（0/1/2）、`curtainLevel`（0–255 整数，中间值如 155 表示约 61% 开）、`curtainDir`。集成已按 0–255 解析并换算为 HA 的 0–100%。
+**窗帘**：`curtainState`（0/1/2）、`curtainLevel`（0–255 整数，中间值如 155 表示约 61% 开）、`curtainDir`（**电机方向**，0=正常 / 1=反向，可写）。集成已按 0–255 解析并换算为 HA 的 0–100%。
+
+- `curtainDir` 是本项目实测确认的**窗帘方向参数**：栖息地 App 未暴露该设置，但写入网关 `setDeviceAttribute` 即生效，参数保存在**电机内部**（网关不持久化、也不回读，回报值恒为 0）。写入后电机会重新校准行程：方向确实改变时整程运行一次，未变则小幅抖动确认。详见仓库 README「窗帘方向」一节。
+- 网关到 Zigbee 的映射（由网关日志实测）：`curtainDir` → 窗帘簇 0x0102 厂商自定义命令 `0xf1`（1 字节）；`curtainState` 0/1/2 → 标准 Up/Open(0x00) / Down/Close(0x01) / Stop(0x02)；`curtainLevel` → Level Control 簇 0x0008 的 Move to Level。
 
 **多键开关**：网关返回 `state0`、`state1`… 及 `devName`，**不返回** `state0Name` 等通道名；集成用 `const.py` 中按 `model` 配置的默认通道名（如 ZSW5HGJ 五合一面板对应 按键1～5）。
 
