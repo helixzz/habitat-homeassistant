@@ -183,6 +183,21 @@ class HabitatCurtainDirection(SelectEntity, RestoreEntity):
         last = await self.async_get_last_state()
         if last is not None and last.state in OPTIONS:
             self._attr_current_option = last.state
+            # 迁移 v0.2.0 用户：那时方向只存在实体状态里，没写进 options。
+            # 补写一次，否则看护逻辑「无值可补」，网关重启后方向仍会被重置。
+            if last.state == OPTION_REVERSED:
+                self.hass.async_create_task(self._backfill_override())
+
+    async def _backfill_override(self) -> None:
+        """把旧版本实体里记录的「反向」补写进 options（延迟执行，避开初始化阶段）。"""
+        await asyncio.sleep(5.0)
+        if self._attr_current_option != OPTION_REVERSED:
+            return
+        overrides = (self._entry.options or {}).get(CONF_CURTAIN_DIR_OVERRIDES) or {}
+        if self._device_uid in overrides:
+            return
+        _LOGGER.info("把已有方向记录迁移到 options: %s -> 反向", self._device_uid)
+        self._store_override(CURTAIN_DIR_REVERSED)
 
     def _store_override(self, value: int) -> None:
         """把期望方向写入 config entry options，网关重启后据此自动补发。"""

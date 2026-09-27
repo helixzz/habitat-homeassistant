@@ -195,6 +195,10 @@ Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MO
 
 ## Changelog
 
+### v0.2.2 (2026-09-27)
+
+- Migration: a direction that only lived in the entity state (v0.2.0) is back-filled into the config entry options, so the watchdog works right after upgrading without re-selecting
+
 ### v0.2.1 (2026-09-27)
 
 - **Curtain direction persistence**: the gateway does not store `curtainDir` (it only forwards it to the motor), so the direction can be reset by a gateway restart / power loss / cloud push. The integration now keeps the desired direction in the config entry options and re-sends it **on setup** and **when the gateway comes back online**
