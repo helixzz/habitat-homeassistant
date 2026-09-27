@@ -60,9 +60,28 @@ cp -r brand config/custom_components/habitat/ 2>/dev/null || true
 
 Then restart Home Assistant.
 
-### Option 2: HACS (recommended)
+### Option 2: HACS custom repository (recommended)
 
-> HACS support coming soon
+This integration is **not in the HACS default store**, but the repository already follows the HACS requirements (`hacs.json` + `brand/icon.png`), so it can be added as a **custom repository** and then updated with one click:
+
+1. Open **HACS** → **⋮** (top right) → **Custom repositories**
+2. Repository: `https://github.com/helixzz/habitat-homeassistant`
+3. Category: **Integration** → **Add**
+4. Back in HACS, search for “栖息地” → open it → **Download** and pick a version (e.g. `v0.3.0`)
+5. **Restart Home Assistant**
+
+HACS will notify you about new releases afterwards.
+
+> Note: HACS downloads the whole repository into `custom_components/habitat/` (so `tools/`, `assets/` and the docs come along too). Harmless, just a few extra files in the folder.
+
+### Upgrading
+
+The integration is loaded by Home Assistant, so **a restart (or a reload of the integration) is required** after upgrading:
+
+- **HACS install**: HACS → Habitat → **Update** → restart HA.
+- **Manual install**: overwrite the files under `custom_components/habitat/` → restart HA.
+
+> ⚠️ **`services.yaml`** was added in v0.2.1 and **`hacs.json`** in v0.3.0 — don't forget them when upgrading manually (`hacs.json` is only needed by HACS).
 
 ## Configuration
 
@@ -211,6 +230,10 @@ Clone or copy this repo into `custom_components/habitat/`, then restart HA or re
 Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MODELS` lists.
 
 ## Changelog
+
+### v0.3.0 (2026-09-27)
+
+- **HACS custom repository support**: added `hacs.json` (`content_in_root`), `brand/icon.png` and `issue_tracker` in the manifest; README now documents HACS install/upgrade
 
 ### v0.2.3 (2026-09-27)
 

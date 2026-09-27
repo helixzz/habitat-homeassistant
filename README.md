@@ -60,9 +60,28 @@ cp -r brand config/custom_components/habitat/ 2>/dev/null || true
 
 然后重启 Home Assistant。
 
-### 方式二：HACS（推荐）
+### 方式二：HACS 自定义仓库（推荐）
 
-> 即将支持 HACS 安装
+本集成**没有上架 HACS 默认商店**，但仓库已按 HACS 规范配置好（`hacs.json` + `brand/icon.png`），可以直接作为**自定义仓库**添加，之后就能一键更新：
+
+1. 打开 **HACS** → 右上角 **⋮** → **自定义仓库**
+2. 仓库填 `https://github.com/helixzz/habitat-homeassistant`
+3. 类别选 **集成 (Integration)** → **添加**
+4. 回到 HACS 搜索「栖息地」→ 进入后点 **下载**，选择版本（如 `v0.3.0`）
+5. **重启 Home Assistant**
+
+之后有新版本时 HACS 会提示更新。
+
+> 说明：HACS 会把整个仓库下载到 `custom_components/habitat/`（因此 `tools/`、`assets/`、文档也会一并进去）。这不影响运行，只是目录里会多一些非必需文件。
+
+### 升级（重要）
+
+集成会随 Home Assistant 一起加载，**升级后必须重启 HA**（或在「设置 → 设备与服务」里重载集成）才会生效。
+
+- **HACS 安装**：HACS → 栖息地 → **更新** → 重启 HA。
+- **手动安装**：覆盖 `custom_components/habitat/` 下的文件 → 重启 HA。
+
+> ⚠️ v0.2.1 起新增了 **`services.yaml`**，v0.3.0 起新增了 **`hacs.json`**。手动升级时别漏了这两个文件（`hacs.json` 是 HACS 用的，手动安装不放也不影响运行）。
 
 ## 配置
 
@@ -211,6 +230,10 @@ python3 tools/set_curtain_direction.py --host 172.16.33.27 \
 在 `const.py` 的 `MODEL_PLATFORMS` 及对应 `*_MODELS` 列表中添加新型号映射。
 
 ## 更新日志
+
+### v0.3.0 (2026-09-27)
+
+- **支持 HACS 自定义仓库**：新增 `hacs.json`（`content_in_root`）、品牌图 `brand/icon.png`、manifest 补 `issue_tracker`；README 增加 HACS 安装与升级说明
 
 ### v0.2.3 (2026-09-27)
 
