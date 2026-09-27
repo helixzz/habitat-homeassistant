@@ -27,6 +27,7 @@ from .const import (
     DEFAULT_PORT,
     DOMAIN,
     PLATFORMS,
+    SERVICE_DIAGNOSE_PANEL_BINDINGS,
     SERVICE_REAPPLY_CURTAIN_DIR,
     SERVICE_REAPPLY_PANEL_DECOUPLE,
     SWITCH_MODELS,
@@ -146,42 +147,144 @@ async def _reapply_curtain_directions(
     return written
 
 
+def _index_groups_by_owner(groups) -> dict[str, list]:
+    """把分组按「归属设备」索引：deviceUid -> 该设备名下的分组列表。"""
+    idx: dict[str, list] = {}
+    for group in groups or []:
+        owner = ((group.get("belongToDevSection") or {}).get("deviceUid")) or ""
+        if owner:
+            idx.setdefault(owner, []).append(group)
+    return idx
+
+
+def _group_member_uids(group) -> list[str]:
+    return [
+        (m.get("deviceUid") if isinstance(m, dict) else m)
+        for m in (group.get("members") or [])
+    ]
+
+
+async def _collect_groups_by_gateway(
+    apis_by_uid: dict, primary_uid: str, default_api: HabitatAPI | None
+) -> dict[str, list]:
+    """读取**每台网关各自**的分组列表。
+
+    分组是保存在各台网关自己的数据库里的 —— 只在主网关上查会漏掉子网关的分组，
+    这正是「面板的组建在另一台网关上」这个坑难以发现的原因之一。
+    """
+    out: dict[str, list] = {}
+    apis = dict(apis_by_uid or {})
+    if primary_uid and primary_uid not in apis and default_api is not None:
+        apis[primary_uid] = default_api
+    for uid, api in apis.items():
+        try:
+            out[uid] = await api.get_groups() or []
+        except Exception:  # noqa: BLE001 - 单台网关读不到不应影响整体
+            _LOGGER.warning("读取网关 %s 的分组失败", uid)
+            out[uid] = []
+    return out
+
+
+async def _diagnose_panel_bindings(
+    hass: HomeAssistant, entry: ConfigEntry, delay: float = 0.0
+) -> int:
+    """检查面板的「按键分组」是否建在它自己所属的网关上，返回有问题的面板数。
+
+    背景（本项目实测确认的根因）：**云端只把配置下发到它记录的网关**。
+    如果设备实际配在另一台网关上（重新配网、装机时配到另一台等），云端下发的
+    按键绑定配置就永远到不了设备 —— 表现为 App 里保存配置转圈约 10 秒后失败、
+    面板按键一直停留在出厂行为（直接吸合自己的继电器）。
+
+    本地可检测的症状：**面板所属的网关上找不到它的按键分组，而另一台网关上却有。**
+
+    本函数只做诊断与告警，不修改任何东西，因此无论「面板按键解绑」选项是否开启
+    都会执行 —— 这类问题越早暴露越好。
+    """
+    if delay:
+        await asyncio.sleep(delay)
+
+    data = hass.data.get(DOMAIN, {}).get(entry.entry_id) or {}
+    coordinator: DataUpdateCoordinator | None = data.get("coordinator")
+    apis_by_uid: dict = data.get("apis_by_uid") or {}
+    primary_uid: str = data.get("primary_uid", "")
+    default_api: HabitatAPI | None = data.get("api")
+    if default_api is None or coordinator is None:
+        return 0
+
+    groups_by_gw = await _collect_groups_by_gateway(
+        apis_by_uid, primary_uid, default_api
+    )
+    idx_by_gw = {gw: _index_groups_by_owner(gs) for gw, gs in groups_by_gw.items()}
+
+    devices = coordinator.data or []
+    seen: set[str] = set()
+    problems = 0
+    for device in devices:
+        uid = device.get("deviceUid") or ""
+        if not uid or uid in seen:
+            continue
+        seen.add(uid)
+        if device.get("model") not in SWITCH_MODELS:
+            continue
+        if BIND_RELAY_LIST_ATTR not in {a.get("name") for a in device.get("dev_attrs") or []}:
+            continue
+        gw = device.get("childGatewayId") or primary_uid
+        if (idx_by_gw.get(gw) or {}).get(uid):
+            continue  # 自己的网关上就有分组 → 正常
+        elsewhere = [
+            other
+            for other, idx in idx_by_gw.items()
+            if other != gw and idx.get(uid)
+        ]
+        if elsewhere:
+            problems += 1
+            _LOGGER.warning(
+                "面板 %s 的按键分组建在网关 %s 上，但它实际属于网关 %s —— "
+                "云端只把配置下发到它记录的网关，因此该面板的按键绑定会保存失败、"
+                "按键会停留在出厂行为。请把该设备重新配网到云端记录的那台网关"
+                "（诊断与修复步骤见 GATEWAY.md 第 4 节）",
+                uid,
+                elsewhere,
+                gw,
+            )
+    if problems:
+        _LOGGER.warning(
+            "共检测到 %s 台面板的按键分组不在其所属网关上（云端/实际网关不一致）",
+            problems,
+        )
+    return problems
+
+
 async def _reapply_panel_decouple(
     hass: HomeAssistant,
     entry: ConfigEntry,
     device_uid: str | None = None,
     delay: float = 0.0,
 ) -> int:
-    """⚠️ 危险功能：解除面板按键的输出绑定（默认关闭）。
+    """解除面板按键的本地继电器绑定，让按键改为发 Zigbee 组播控制智能灯。
 
-    **风险提示**：bindRelayList 的**确切语义未被完整验证**。已知：
-      * 对某些面板写空之后按键会**失去输出**（实测主卧双键开关按键无反应，且无法用写回
-        非空值恢复，需恢复出厂设置）；
-      * 但对另一些面板写空之后按键**仍正常工作**（实测厨房双键开关，其组里包含它自己）。
-    因此它**不能**被当作「把按键改成软控制」的可靠开关 —— 用途未明、风险未知。
+    （默认关闭；启用前请阅读下面的安全前提。）
 
-    因此本功能**默认关闭**，只在明确知道自己在做什么、且该面板的按键可以被牺牲时开启。
-    真正的「按键既不切继电器、又能控灯」目前无软件解（需要改线或换用按键不直连继电器的
-    面板型号，例如五合一面板 / 情景开关）。
+    **机制（已实测确认）**：一个面板按键能做三件事 ——
+      ① `bindRelayList` 里列出该继电器时，**直接吸合自己的继电器**（会切断负载供电）
+      ② 向 `ownGroupList` 里的 Zigbee 组发组播（控制智能灯）
+      ③ 把按键事件上报给网关
+    出厂默认是 ①。写 `bindRelayList = "[]"` 后按键不再驱动继电器（②生效）。
 
-    以下为原有说明（判据部分仍然成立，仅「解绑后按键仍可用」的假设是错的）：
+    ⚠️ **安全前提（本项目踩过的坑）**：写 `[]` 之前，**组必须是有效的** ——
+    即该组必须存在于**面板自己所属的那台网关**上、成员已注册。
+    如果组是坏的（例如建在另一台网关上），写 `[]` 之后按键会**完全失去输出**，
+    变成哑键（既不切继电器、也不发组播），只能重新配网或恢复出厂才能恢复。
 
-    解除「按键不该切继电器」的面板上的本地继电器绑定。
+    因此本函数现在**只在确认面板所属网关上存在它的按键分组时才下发**；
+    否则跳过并告警（见 `_diagnose_panel_bindings`）。
 
-    面板固件里有两套彼此独立的绑定：
-      ① 组绑定      —— 按键向 Zigbee 组发组播命令（ownGroupList）
-      ② 继电器绑定  —— bindRelayList，按键直接吸合面板自己的继电器（纯本地行为）
+    另外：如果分组里包含面板自己，说明负载就是它自己的继电器输出（普通灯），
+    切继电器是唯一能开关那盏灯的方式 → 必须保留，跳过。
 
-    判断该面板需不需要 ②：看它名下所有 Zigbee 组的成员里**有没有它自己**。
-      * 组里**没有**自己 → 负载是独立的智能灯控器（常火供电），按键只需发组播；
-        此时如果 ② 还在，按键会顺带切断灯控器的供电，灯控器靠电容撑几分钟后掉线
-        （用户看到的就是「灯忽然不可用」）→ 必须解绑。
-      * 组里**有**自己 → 负载就是它自己的继电器输出（普通灯），切继电器是唯一能
-        开关那盏灯的方式 → 必须保留，跳过。
-
-    下发时值必须传**字符串** "[]"，不能传 Python 列表 —— 列表虽然也能下发，但网关
-    拼 HTTP 响应时会崩（500），反复触发会把它的 HTTP 服务压死；字符串形式返回 200、
-    同样下发 zgb_val:0，而且不受「值没变就跳过」限制，一条请求即可。
+    下发时值必须传**字符串** "[]"：传 Python 列表虽然也能下发，但网关拼 HTTP 响应
+    时会崩（500），反复触发会把它的 HTTP 服务压死；字符串形式返回 200、同样下发
+    zgb_val:0，且不受「值没变就跳过」限制。
     """
     if delay:
         await asyncio.sleep(delay)
@@ -194,23 +297,10 @@ async def _reapply_panel_decouple(
     if default_api is None:
         return 0
 
-    try:
-        groups = await default_api.get_groups()
-    except Exception:  # noqa: BLE001 - 看护失败不应影响集成加载
-        _LOGGER.exception("读取分组失败，跳过面板按键解绑")
-        return 0
-
-    # deviceUid -> 该面板名下各组的成员列表
-    owned: dict[str, list[list[str]]] = {}
-    for group in groups or []:
-        owner = ((group.get("belongToDevSection") or {}).get("deviceUid")) or ""
-        if not owner:
-            continue
-        members = [
-            (m.get("deviceUid") if isinstance(m, dict) else m)
-            for m in (group.get("members") or [])
-        ]
-        owned.setdefault(owner, []).append([m for m in members if m])
+    groups_by_gw = await _collect_groups_by_gateway(
+        apis_by_uid, primary_uid, default_api
+    )
+    idx_by_gw = {gw: _index_groups_by_owner(gs) for gw, gs in groups_by_gw.items()}
 
     devices = (coordinator.data if coordinator else None) or []
     written = 0
@@ -224,13 +314,18 @@ async def _reapply_panel_decouple(
             continue
         if device.get("model") not in SWITCH_MODELS:
             continue
-        attr_names = {a.get("name") for a in (device.get("dev_attrs") or [])}
-        if BIND_RELAY_LIST_ATTR not in attr_names:
+        if BIND_RELAY_LIST_ATTR not in {a.get("name") for a in device.get("dev_attrs") or []}:
             continue  # 该型号没有继电器绑定字段
-        panel_groups = owned.get(uid)
-        if not panel_groups:
-            continue  # 按键没有任何组绑定，不处理
-        if any(uid in members for members in panel_groups):
+
+        gw = device.get("childGatewayId") or primary_uid
+        own_groups = (idx_by_gw.get(gw) or {}).get(uid) or []
+        if not own_groups:
+            # 没有有效分组 → 绝不能写 []，否则按键会变成哑键
+            _LOGGER.debug(
+                "面板 %s 在所属网关 %s 上没有按键分组，跳过解绑（避免产生哑键）", uid, gw
+            )
+            continue
+        if any(uid in _group_member_uids(g) for g in own_groups):
             _LOGGER.debug(
                 "面板 %s 的按键负载是自身继电器（普通灯），保留继电器绑定", uid
             )
@@ -247,7 +342,7 @@ async def _reapply_panel_decouple(
         if code == 200:
             written += 1
             _LOGGER.info(
-                "已解除面板 %s 的按键继电器绑定（按键改为只发 Zigbee 组播）", uid
+                "已解除面板 %s 的按键继电器绑定（按键改为只发 Zigbee 组播控制智能灯）", uid
             )
         else:
             _LOGGER.warning("解绑面板 %s 失败，网关返回 %s", uid, code)
@@ -288,6 +383,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 hass.async_create_task(
                     _reapply_panel_decouple(hass, entry, delay=DECOUPLE_DELAY)
                 )
+            hass.async_create_task(
+                _diagnose_panel_bindings(hass, entry, delay=DECOUPLE_DELAY)
+            )
         return devices
 
     # 轮询间隔可配置：网关没有推送接口，非 HA 发起的变更（物理开关/面板/栖息地 App）
@@ -378,10 +476,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
 
     # 同理：面板固件更新/重置会清掉本地的继电器绑定，启动时补一次
+    # （仅在「面板按键解绑」选项开启时执行，而且只在确认分组有效时才下发）
     if (entry.options or {}).get(CONF_DECOUPLE_PANEL_BUTTONS, False):
         hass.async_create_task(
             _reapply_panel_decouple(hass, entry, delay=DECOUPLE_DELAY)
         )
+
+    # 诊断：面板的按键分组是否建在它自己所属的网关上。
+    # 「云端记录的网关 ≠ 设备实际网关」会让配置静默失败（App 保存转圈后报错、
+    # 面板停留在出厂行为）。只告警、不修改，因此与上面的选项无关，始终执行。
+    hass.async_create_task(
+        _diagnose_panel_bindings(hass, entry, delay=DECOUPLE_DELAY)
+    )
 
     async def _async_reapply_service(call: ServiceCall) -> None:
         """手动重新下发窗帘方向。"""
@@ -409,6 +515,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             SERVICE_REAPPLY_PANEL_DECOUPLE,
             _async_decouple_service,
             schema=SERVICE_REAPPLY_SCHEMA,
+        )
+
+    async def _async_diagnose_service(call: ServiceCall) -> None:
+        """手动诊断面板的按键分组网关归属（不改动任何配置）。"""
+        total = 0
+        for config_entry in hass.config_entries.async_entries(DOMAIN):
+            total += await _diagnose_panel_bindings(hass, config_entry)
+        if not total:
+            _LOGGER.info("面板按键分组诊断完成：未发现问题")
+
+    if not hass.services.has_service(DOMAIN, SERVICE_DIAGNOSE_PANEL_BINDINGS):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_DIAGNOSE_PANEL_BINDINGS,
+            _async_diagnose_service,
         )
 
     return True

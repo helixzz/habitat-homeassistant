@@ -1,7 +1,7 @@
 {
   "domain": "habitat",
   "name": "栖息地智能家庭",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "codeowners": [
     "@helixzz"
   ],
