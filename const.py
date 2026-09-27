@@ -69,6 +69,13 @@ COVER_MODELS = ["ZT21LGJ", "EC02000001"]
 CURTAIN_DIR_ATTR = "curtainDir"
 CURTAIN_DIR_NORMAL = 0
 CURTAIN_DIR_REVERSED = 1
+# 网关**不持久化** curtainDir（只把它转发给电机，不写数据库），所以方向可能被
+# 网关重启/云端同步重置。为让方向「存得住」，集成把期望值记在 config entry
+# options 里，并在网关重连、集成启动时自动重新下发：
+#   curtain_dir_overrides: {"<deviceUid>": 0|1}
+CONF_CURTAIN_DIR_OVERRIDES = "curtain_dir_overrides"
+CONF_CURTAIN_DIR_WATCHDOG = "curtain_dir_watchdog"
+SERVICE_REAPPLY_CURTAIN_DIR = "reapply_curtain_direction"
 # 五合一传感器 (environmental)
 SENSOR_MODELS = ["ZSW5HGJ", "SHC-4J01-SW"]
 # 空调、新风、燃气

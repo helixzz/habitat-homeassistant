@@ -12,7 +12,14 @@ from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers import area_registry as ar
 
 from .api import HabitatAPI, HabitatAPIError
-from .const import DEFAULT_HOST, DEFAULT_PORT, DOMAIN, COVER_MODELS
+from .const import (
+    CONF_CURTAIN_DIR_OVERRIDES,
+    CONF_CURTAIN_DIR_WATCHDOG,
+    DEFAULT_HOST,
+    DEFAULT_PORT,
+    DOMAIN,
+    COVER_MODELS,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -69,8 +76,20 @@ def _options_data_from_input(
     inverted_cover_uids: list[str],
     current_options: dict[str, Any],
 ) -> dict[str, Any]:
-    """从选项表单生成 options 数据，含窗帘反向与子网关。子网关字段留空则清除已有配置。"""
-    data = {"inverted_cover_uids": inverted_cover_uids}
+    """从选项表单生成 options 数据，含窗帘反向、方向看护与子网关。子网关字段留空则清除已有配置。"""
+    data = {
+        "inverted_cover_uids": inverted_cover_uids,
+        # 必须原样保留：这是「窗帘方向」的真值源，保存选项时不能丢
+        CONF_CURTAIN_DIR_OVERRIDES: dict(
+            current_options.get(CONF_CURTAIN_DIR_OVERRIDES) or {}
+        ),
+        CONF_CURTAIN_DIR_WATCHDOG: bool(
+            user_input.get(
+                CONF_CURTAIN_DIR_WATCHDOG,
+                current_options.get(CONF_CURTAIN_DIR_WATCHDOG, True),
+            )
+        ),
+    }
     host = (user_input.get("child_gateway_host") or "").strip()
     uid = (user_input.get("child_gateway_uid") or "").strip()
     key = (user_input.get("child_gateway_key") or "").strip() if user_input.get("child_gateway_key") is not None else ""
@@ -205,10 +224,18 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
             vol.Optional("child_gateway_key", default=child0.get("key", "")): str,
             vol.Optional("child_gateway_pwd", default=child0.get("pwd", "")): str,
         }
+        # 方向看护：网关不持久化 curtainDir，勾选后在网关重连/集成启动时自动补发
+        watchdog_fields = {
+            vol.Optional(
+                CONF_CURTAIN_DIR_WATCHDOG,
+                default=bool(opts.get(CONF_CURTAIN_DIR_WATCHDOG, True)),
+            ): bool,
+        }
 
         if not covers:
             schema = {
                 vol.Optional("_no_covers", default=True): bool,
+                **watchdog_fields,
                 **main_fields,
                 **child_fields,
             }
@@ -227,6 +254,7 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
             return f"反向 - {name} ({uid[-8:]})"
 
         schema = {vol.Optional(key_for(uid, name), default=uid in inverted): bool for uid, name in covers}
+        schema.update(watchdog_fields)
         schema.update(main_fields)
         schema.update(child_fields)
         data_schema = vol.Schema(schema)
