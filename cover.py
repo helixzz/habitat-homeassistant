@@ -116,7 +116,13 @@ class HabitatCover(CoverEntity):
         for attr in dev_attrs:
             if attr.get("name") != "curtainLevel":
                 continue
-            raw = attr.get("value") or attr.get("valueStr")
+            # ⚠️ 不能写成 `attr.get("value") or attr.get("valueStr")`：
+            # curtainLevel = 0 表示「全开」，而 0 是 falsy，会被误判成「属性缺失」
+            # 从而 continue 跳过更新 —— 结果是一旦窗帘全开，实体就永远停在旧位置
+            # （表现为「物理全开但 HA 显示全关」）。必须用 is None 判断。
+            raw = attr.get("value")
+            if raw is None:
+                raw = attr.get("valueStr")
             if raw is None:
                 continue
             try:

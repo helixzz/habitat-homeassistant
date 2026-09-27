@@ -231,6 +231,25 @@ python3 tools/set_curtain_direction.py --host 172.16.33.27 \
 
 ## 更新日志
 
+### v0.3.2 (2026-09-27)
+
+**修复：窗帘全开后 HA 永远显示「全关」（`curtainLevel = 0` 被当成属性缺失）**
+
+网关的 `curtainLevel` 只有 `value` 字段（没有 `valueStr`），而 `cover.py` 写的是：
+
+```python
+raw = attr.get("value") or attr.get("valueStr")
+```
+
+`curtainLevel = 0` 表示**全开**，但 `0` 是 falsy → `raw` 变成 `None` → `continue` **跳过更新** → 实体保留旧的 `_level`。结果就是：窗帘一旦全开，HA 的位置/开关就永远停在旧值（通常表现为「物理全开、HA 显示全关」）。
+
+实测证据（书房，方向正常的窗帘）：命令「关闭」→ 网关 level = **254**；命令「打开」→ level = **0**。即厂商 level 语义（0=开 / 255=关）与 HA position 语义（0=关 / 100=开）**天生相反**。
+
+修复：
+
+- `cover.py` 改用 `is None` 判断（`light.py` 早就是正确写法，`switch.py` 的通道名解析同步修正）
+- 附带确认：因为厂商 level 语义与 HA 相反，**每一个窗帘都需要在集成选项里勾选「反向 - 窗帘」**，与电机方向 `curtainDir` 无关（那是另一个设置，只有装反的房间需要改）
+
 ### v0.3.1 (2026-09-27)
 
 **修复：集成加载后所有实体只更新一次就再也不刷新（严重 bug）**

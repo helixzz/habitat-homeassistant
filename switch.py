@@ -32,7 +32,9 @@ def _channel_label_for_switch(dev_attrs: list, model: str, channel_index: int) -
         attr_name = pattern.format(i=channel_index)
         for attr in dev_attrs:
             if attr.get("name") == attr_name:
-                val = attr.get("value") or attr.get("valueStr")
+                val = attr.get("value")
+                if val is None:
+                    val = attr.get("valueStr")
                 if val is not None and str(val).strip():
                     return str(val).strip()
                 break
