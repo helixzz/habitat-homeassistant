@@ -293,6 +293,30 @@ Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MO
 
 ## Changelog
 
+### v0.3.9 (2026-09-28)
+
+**Safe panel-button decoupling + a new gateway-ownership diagnostic**
+
+Full end-to-end testing (cross-checked through the vendor API and gateway logs) has
+settled how a panel button actually works:
+
+| What a button can do | Determined by |
+|---|---|
+| (1) directly actuate the panel's own relay (cutting the controller's power) | whether the relay is listed in `bindRelayList` |
+| (2) multicast to a Zigbee group (controlling smart lights) | `ownGroupList` **plus the group existing on the gateway the panel is actually on** |
+| (3) report the button event to the gateway | `stateN` / `sceneLp*` |
+
+(1) is the factory default. Writing `bindRelayList = "[]"` leaves only (2) - **but only if the group is valid**: if the group lives on another gateway the empty write leaves the button with no output at all. That is exactly what happened during the v0.3.7 episode.
+
+**Changes**
+
+1. Panel-button decoupling is now **safety-checked**: `[]` is only written when the panel's own gateway really does hold its button groups; otherwise it is skipped with a logged reason, making a dead button impossible by construction.
+2. Group reads now walk **every gateway's own group list**. Previously only the primary gateway was queried, missing child-gateway groups (groups are stored per gateway), which is part of why that trap stayed hidden for so long.
+3. **New diagnostic**: checks whether each panel's button groups live on the gateway that panel actually belongs to. Runs automatically on startup and after a gateway reconnect (warn only, never modifying anything), and can be called manually via `habitat.diagnose_panel_bindings`.
+4. Option and service descriptions rewritten around the measured behaviour.
+
+**Why upgrade**: this diagnostic detects the "cloud-recorded gateway != actual gateway" case - the cloud only delivers configuration to the gateway it has recorded, which shows up as the app spinning for about ten seconds and then failing to save, with the panel stuck on its factory behaviour (button cuts the controller's power, controller drops offline minutes later). Two devices in this home were found to be affected.
+
 ### v0.3.8 (2026-09-27)
 
 **⚠️ Important correction: the v0.3.7 "panel button decoupling" writes the buttons dead; it is now off by default**
