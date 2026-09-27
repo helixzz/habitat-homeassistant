@@ -173,11 +173,16 @@ Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MO
 
 ## Changelog
 
+### v0.2.0 (2026-09-27)
+
+- New “curtain direction” select entity: writes the gateway `curtainDir` attribute, a **hardware-level** fix for curtains installed the wrong way (the app and the hardware panels become correct too)
+- New `tools/set_curtain_direction.py`: standalone CLI to list curtains and read/write the motor direction
+- Docs: how the direction works, the gateway → Zigbee mapping (`curtainDir` → Window Covering 0x0102 manufacturer command `0xf1`) and the gateway password exposure note
+
 ### v0.1.0 (2026-03-07)
 
 - Initial release: lights, switches, covers, sensors
 - Later: 5‑in‑1 Climate/Humidifier/Fan/Number, floor heating state, multiple gateways, scene/5‑in‑1 switches hidden by default, English translations (e.g. Fresh Air)
-- Curtain direction: new “curtain direction” select entity (writes gateway `curtainDir`, hardware-level fix for reversed curtains) and `tools/set_curtain_direction.py`
 
 ## License
 

@@ -173,11 +173,16 @@ python3 tools/set_curtain_direction.py --host 172.16.33.27 \
 
 ## 更新日志
 
+### v0.2.0 (2026-09-27)
+
+- 新增「窗帘方向」选择实体：写入网关 `curtainDir`，**硬件级**纠正装反的电动窗帘（App 与硬件面板也会一起变正确）
+- 新增 `tools/set_curtain_direction.py`：不依赖 HA 的独立脚本，可列出窗帘并查看/修改电机方向
+- 文档：补充窗帘方向的原理、网关到 Zigbee 的属性映射（`curtainDir` → 窗帘簇 0x0102 厂商命令 `0xf1`）与网关密码暴露的安全提示
+
 ### v0.1.0 (2026-03-07)
 
 - 初始版本：灯光、开关、窗帘、传感器
 - 后续：五合一面板 Climate/Humidifier/Fan/Number、地暖状态、多网关、情景/五合一开关默认隐藏、英文翻译（Fresh Air 等）
-- 窗帘方向：新增「窗帘方向」选择实体（写网关 `curtainDir`，硬件级纠正装反的窗帘）与 `tools/set_curtain_direction.py` 脚本
 
 ## 许可证
 
