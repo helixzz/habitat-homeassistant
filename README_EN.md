@@ -223,7 +223,7 @@ v0.3.7 implemented “automatically write `bindRelayList` empty to decouple the 
 
 > After the empty write the panel button has **no output at all** - it no longer drives the relay, but the original “button → Zigbee multicast to the lights” stops working too. The button becomes completely dead and only a factory reset brings it back.
 
-`bindRelayList` is the button's **output binding table**, not a standalone “button → relay” switch. Writing it empty means “this button has no output”, **not** “switch to software control”.
+The exact semantics of `bindRelayList` are **not fully verified**. It clearly affects the button's output behaviour, and an empty array does **not** mean “switch to software control”. Measured outcomes differ: on some panels an empty write leaves the button with no output (bedroom 2-gang switch), while on others the button keeps working (kitchen 2-gang switch). Treat it as a field with **unknown purpose and unknown risk**.
 
 The feature is therefore **disabled by default from v0.3.8** (it remains in the options, flagged as dangerous, only for cases where the panel's buttons can genuinely be sacrificed).
 
