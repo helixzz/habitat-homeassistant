@@ -1,10 +1,11 @@
 {
   "domain": "habitat",
   "name": "栖息地智能家庭",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "codeowners": ["@helixzz"],
   "config_flow": true,
   "documentation": "https://github.com/helixzz/habitat-homeassistant",
+  "issue_tracker": "https://github.com/helixzz/habitat-homeassistant/issues",
   "integration_type": "device",
   "iot_class": "local_polling",
   "requirements": ["aiohttp>=3.8.0"],
