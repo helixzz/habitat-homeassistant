@@ -15,10 +15,13 @@ from .api import HabitatAPI, HabitatAPIError
 from .const import (
     CONF_CURTAIN_DIR_OVERRIDES,
     CONF_CURTAIN_DIR_WATCHDOG,
+    CONF_POLL_INTERVAL,
     DEFAULT_HOST,
+    DEFAULT_POLL_INTERVAL,
     DEFAULT_PORT,
     DOMAIN,
     COVER_MODELS,
+    POLL_INTERVAL_CHOICES,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -71,6 +74,15 @@ def _main_gateway_data_from_input(
     }
 
 
+def _coerce_poll_interval(value: Any) -> int:
+    """把轮询间隔收敛到合法取值（表单是下拉选择，手动改 options 也要容错）。"""
+    try:
+        seconds = int(value)
+    except (TypeError, ValueError):
+        return DEFAULT_POLL_INTERVAL
+    return seconds if seconds in POLL_INTERVAL_CHOICES else DEFAULT_POLL_INTERVAL
+
+
 def _options_data_from_input(
     user_input: dict[str, Any],
     inverted_cover_uids: list[str],
@@ -87,6 +99,12 @@ def _options_data_from_input(
             user_input.get(
                 CONF_CURTAIN_DIR_WATCHDOG,
                 current_options.get(CONF_CURTAIN_DIR_WATCHDOG, True),
+            )
+        ),
+        CONF_POLL_INTERVAL: _coerce_poll_interval(
+            user_input.get(
+                CONF_POLL_INTERVAL,
+                current_options.get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL),
             )
         ),
     }
@@ -231,11 +249,22 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
                 default=bool(opts.get(CONF_CURTAIN_DIR_WATCHDOG, True)),
             ): bool,
         }
+        # 轮询间隔：网关无推送接口，非 HA 发起的变更只能靠轮询发现；
+        # 间隔越短越及时，代价是更多局域网流量（设备列表约 85 KB / 次）。
+        poll_fields = {
+            vol.Optional(
+                CONF_POLL_INTERVAL,
+                default=_coerce_poll_interval(
+                    opts.get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL)
+                ),
+            ): vol.In(POLL_INTERVAL_CHOICES),
+        }
 
         if not covers:
             schema = {
                 vol.Optional("_no_covers", default=True): bool,
                 **watchdog_fields,
+                **poll_fields,
                 **main_fields,
                 **child_fields,
             }
@@ -248,13 +277,14 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
             return self.async_show_form(
                 step_id="init",
                 data_schema=vol.Schema(schema),
-                description_placeholders={"msg": "当前未发现窗帘设备。上方可修改主网关连接（主机/IP、端口、UID、key、密码）；下方可配置子网关。主机建议填主机名或 DHCP 保留名。"},
+                description_placeholders={"msg": "当前未发现窗帘设备。上方可修改主网关连接（主机/IP、端口、UID、key、密码）；下方可配置子网关。主机建议填主机名或 DHCP 保留名。「poll_interval」= 状态轮询间隔（秒，默认 15）：网关没有推送接口，物理开关/面板/栖息地 App 的变更只能靠轮询发现，间隔越短越及时（设备列表约 85 KB/次）。"},
             )
         def key_for(uid: str, name: str) -> str:
             return f"反向 - {name} ({uid[-8:]})"
 
         schema = {vol.Optional(key_for(uid, name), default=uid in inverted): bool for uid, name in covers}
         schema.update(watchdog_fields)
+        schema.update(poll_fields)
         schema.update(main_fields)
         schema.update(child_fields)
         data_schema = vol.Schema(schema)
@@ -272,5 +302,5 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="init",
             data_schema=data_schema,
-            description_placeholders={"msg": "上方可修改主网关连接（主机/IP、端口、UID、key、密码）。勾选需要反向的窗帘；下方可填子网关。主机建议填主机名或 DHCP 保留名。"},
+            description_placeholders={"msg": "上方可修改主网关连接（主机/IP、端口、UID、key、密码）。勾选需要反向的窗帘；下方可填子网关。主机建议填主机名或 DHCP 保留名。「poll_interval」= 状态轮询间隔（秒，默认 15）：网关没有推送接口，物理开关/面板/栖息地 App 的变更只能靠轮询发现，间隔越短越及时（设备列表约 85 KB/次）。"},
         )

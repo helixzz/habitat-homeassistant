@@ -231,6 +231,14 @@ Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MO
 
 ## Changelog
 
+### v0.3.4 (2026-09-27)
+
+**Added: configurable poll interval (default 60s -> 15s) to reduce light/switch state lag**
+
+The gateway's local API has **no push or long-poll endpoint** (probing 20 candidates such as `subscribe`/`notify`/`poll`/`getevent` all returned 404; only `getgatewaydevice` works), so changes made from a **physical switch, panel or the Habitat App** can only be noticed by polling. The interval used to be a fixed 60 seconds — 30 s average lag, 60 s worst case, which is exactly "the light is on but HA shows off, then it catches up half a minute later".
+
+The interval is now selectable in the integration options (**5 / 10 / 15 / 30 / 60 / 120 s**, default **15 s**). The device list is ~85 KB and takes ~0.26 s, so 15 s is cheap; raise it to save traffic.
+
 ### v0.3.3 (2026-09-27)
 
 **Fix: `curtainLevel <= 100` was misinterpreted as a percentage**

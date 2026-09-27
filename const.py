@@ -19,8 +19,15 @@ PLATFORMS = [
 DEFAULT_HOST = "172.16.33.72"
 DEFAULT_PORT = 80
 
-# Coordinator polling interval for device list
-UPDATE_INTERVAL_SEC = 60
+# 轮询间隔（秒）。网关没有推送/长轮询接口（除 getgatewaydevice 外本地端点都是 404），
+# 所以所有状态都靠轮询整个设备列表获得 —— 间隔越短，由物理开关/面板/栖息地 App
+# 引起的变更在 HA 里出现得越快，代价是更多局域网流量（设备列表约 85 KB / 次）。
+CONF_POLL_INTERVAL = "poll_interval"
+DEFAULT_POLL_INTERVAL = 15
+POLL_INTERVAL_CHOICES = [5, 10, 15, 30, 60, 120]
+
+# 兼容旧引用
+UPDATE_INTERVAL_SEC = DEFAULT_POLL_INTERVAL
 
 # API configuration
 API_GET_DEVICES = "/gateway/getgatewaydevice"
