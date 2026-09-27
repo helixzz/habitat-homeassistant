@@ -2,13 +2,14 @@
 
 import asyncio
 import logging
+import time
 from datetime import timedelta
 
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PORT
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -30,6 +31,9 @@ _LOGGER = logging.getLogger(__name__)
 
 # 网关重启后重新下发方向前的等待时间：等 Zigbee 网络与设备恢复
 REAPPLY_DELAY = 45.0
+
+# 发现新设备后自动重载的冷却时间，避免设备闪进闪出时反复重载
+NEW_DEVICE_RELOAD_COOLDOWN = 300.0
 
 SERVICE_REAPPLY_SCHEMA = vol.Schema(
     {
@@ -218,8 +222,34 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # （自己在 async_update 里读 coordinator.data），从不调用 async_add_listener，
     # 所以 _listeners 一直为空 —— 结果是集成加载后除了首次拉取之外再也不会轮询，
     # 所有传感器/开关/灯的状态会永久停在加载那一刻。
-    # 这里挂一个空监听者，把周期性轮询真正打开。
-    entry.async_on_unload(coordinator.async_add_listener(lambda: None))
+    #
+    # 下面这个监听者一举两得：既把周期性轮询打开，又负责发现「后入网」的新设备。
+    known_device_uids = {d.get("deviceUid") for d in (coordinator.data or [])}
+    last_reload = 0.0
+
+    @callback
+    def _async_check_new_devices() -> None:
+        """设备可能在集成启动之后才入网（Zigbee 配网、固件重置后重新入网等）。
+
+        各平台只在 setup 时按 coordinator.data 创建实体，所以这些新设备会一直没有
+        实体（HA 里只留一个 restored 空壳），必须手动重载集成才会出现。
+        这里监听协调器更新，一旦发现新设备就自动重载一次。
+        """
+        nonlocal known_device_uids, last_reload
+        current = {d.get("deviceUid") for d in (coordinator.data or [])}
+        new_uids = current - known_device_uids
+        if new_uids:
+            known_device_uids = current
+            now = time.monotonic()
+            if now - last_reload < NEW_DEVICE_RELOAD_COOLDOWN:
+                return  # 冷却中：设备在闪进闪出，避免反复重载
+            last_reload = now
+            _LOGGER.info("发现新入网设备 %s，重载集成以创建实体", sorted(new_uids))
+            hass.config_entries.async_schedule_reload(entry.entry_id)
+        else:
+            known_device_uids = current
+
+    entry.async_on_unload(coordinator.async_add_listener(_async_check_new_devices))
 
     # 启动时也补一次（HA 与网关一起断电重启时，「重连」事件可能观察不到）
     if (entry.options or {}).get(CONF_CURTAIN_DIR_WATCHDOG, True):
