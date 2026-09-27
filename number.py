@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import HabitatAPI
 from .const import DOMAIN, PANEL_5IN1_MODELS, FAN_LEVEL_AUTO
-from .helpers import get_attr_value, is_main_panel
+from .helpers import HabitatAvailabilityMixin, get_attr_value, is_main_panel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ async def async_setup_entry(
         online = device.get("online", False)
         dev_attrs = device.get("dev_attrs", [])
 
-        if model not in PANEL_5IN1_MODELS or not online:
+        if model not in PANEL_5IN1_MODELS:
             continue
 
         name = device_uid
@@ -136,7 +136,7 @@ async def async_setup_entry(
     async_add_entities(numbers)
 
 
-class HabitatNumber(NumberEntity):
+class HabitatNumber(HabitatAvailabilityMixin, NumberEntity):
     """五合一面板可调数值：室温目标、湿度目标、空调/新风风速。"""
 
     def __init__(

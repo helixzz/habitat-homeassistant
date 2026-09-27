@@ -12,7 +12,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import HabitatAPI
 from .const import DOMAIN, PANEL_5IN1_MODELS
-from .helpers import get_attr_value
+from .helpers import HabitatAvailabilityMixin, get_attr_value
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ async def async_setup_entry(
         online = device.get("online", False)
         dev_attrs = device.get("dev_attrs", [])
 
-        if model not in PANEL_5IN1_MODELS or not online:
+        if model not in PANEL_5IN1_MODELS:
             continue
 
         name = device_uid
@@ -63,7 +63,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class HabitatHumidifier(HumidifierEntity):
+class HabitatHumidifier(HabitatAvailabilityMixin, HumidifierEntity):
     """五合一面板加湿器实体：当前湿度、目标湿度可读写，新风按目标加湿。"""
 
     _attr_min_humidity = 0

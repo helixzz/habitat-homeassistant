@@ -13,7 +13,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import HabitatAPI
 from .const import DOMAIN, SENSOR_MODELS, AC_MODELS, FA_MODEL, GA_MODEL
-from .helpers import is_main_panel
+from .helpers import HabitatAvailabilityMixin, is_main_panel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ async def async_setup_entry(
                 break
         
         # 五合一传感器：实体名仅保留类型（温度、湿度等），设备名单独传入 device_info
-        if model in SENSOR_MODELS and online:
+        if model in SENSOR_MODELS:
             sensors.append(
                 HabitatSensor(api, coordinator, gateway_device_id, device_uid, name, "温度", device, "temperature", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
             )
@@ -84,7 +84,7 @@ async def async_setup_entry(
                         )
         
         # 空调传感器
-        elif model in AC_MODELS and online:
+        elif model in AC_MODELS:
             sensors.append(
                 HabitatSensor(api, coordinator, gateway_device_id, device_uid, name, "当前温度", device, "temperature", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
             )
@@ -93,7 +93,7 @@ async def async_setup_entry(
             )
         
         # 新风机
-        elif model == FA_MODEL and online:
+        elif model == FA_MODEL:
             sensors.append(
                 HabitatSensor(api, coordinator, gateway_device_id, device_uid, name, "湿度", device, "humidity", SensorDeviceClass.HUMIDITY, PERCENTAGE)
             )
@@ -107,7 +107,7 @@ async def async_setup_entry(
                 )
         
         # 燃气报警器
-        elif model == GA_MODEL and online:
+        elif model == GA_MODEL:
             sensors.append(
                 HabitatSensor(api, coordinator, gateway_device_id, device_uid, name, "气体状态", device, "sensor_gas_state", None, None)
             )
@@ -118,7 +118,7 @@ async def async_setup_entry(
     async_add_entities(sensors)
 
 
-class HabitatSensor(SensorEntity):
+class HabitatSensor(HabitatAvailabilityMixin, SensorEntity):
     """Representation of a Habitat sensor."""
 
     def __init__(

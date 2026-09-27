@@ -231,6 +231,34 @@ python3 tools/set_curtain_direction.py --host 172.16.33.27 \
 
 ## 更新日志
 
+### v0.3.5 (2026-09-27)
+
+**修复：设备离线期间集成不创建实体 → 设备恢复后 HA 里永远「不可用」（必须重载集成才行）**
+
+所有平台在创建实体时都按 `online` 过滤：
+
+```python
+if model in LIGHT_MODELS and online:      # light.py，switch/cover/sensor/… 同样
+    ...创建实体...
+```
+
+后果（真实案例）：用户房间里「四合一面板」的固件更新后，面板把灯控器（`ZBW4CGJ` 灯带）的**电断掉了**；网关随即把这些灯标为 `online=false`。此时集成重载 → 这些灯**根本没被创建** → HA 只保留一个 `restored` 占位状态。等用户重新按键给灯控器上电、灯恢复在线后，HA 里**仍然是「不可用」**，除非再重载一次集成。
+
+另外所有实体都**没有定义 `available`**，所以「可用性」完全由创建那一刻是否在线决定。
+
+修复：
+
+- 所有平台**无条件创建实体**（不再在创建阶段按 `online` 过滤）
+- 新增 `helpers.HabitatAvailabilityMixin`，统一提供动态 `available`：
+
+  ```python
+  @property
+  def available(self) -> bool:
+      return bool((self._device_data or {}).get("online", True))
+  ```
+
+  设备离线时如实显示 `unavailable`，**重新上线后下一次轮询就会自动恢复**，不再需要重载集成。
+
 ### v0.3.4 (2026-09-27)
 
 **新增：可配置的轮询间隔（默认 60s → 15s），改善灯光/开关状态滞后**
