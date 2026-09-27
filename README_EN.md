@@ -231,6 +231,16 @@ Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MO
 
 ## Changelog
 
+### v0.3.6 (2026-09-27)
+
+**Fix: a device that joins after the integration started never gets entities (a manual reload was required)**
+
+Platforms only build entities from `coordinator.data` at setup time, so a device that joins later (Zigbee commissioning, rejoining after a panel factory reset, power-cycling back onto the network, ...) never gets entities - HA keeps only a `restored` placeholder.
+
+Real case hit here: after the bedroom 2-gang panel was reset by a button combo and rejoined, all 7 of its HA entities had no state and only a manual integration reload brought them back.
+
+Fix: the coordinator listener (which already keeps polling alive since v0.3.1) now also diffs the device UID set and **automatically reloads the integration once when a new device appears**, so the platforms create its entities. A 5-minute cooldown prevents reload loops when a device flaps.
+
 ### v0.3.5 (2026-09-27)
 
 **Fix: entities were not created while a device was offline, so they stayed "unavailable" forever after the device came back**
