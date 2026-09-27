@@ -28,7 +28,7 @@ from .const import (
     CURTAIN_DIR_REVERSED,
     DOMAIN,
 )
-from .helpers import get_attr_value
+from .helpers import HabitatAvailabilityMixin, get_attr_value
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ async def async_setup_entry(
         online = device.get("online", False)
         dev_attrs = device.get("dev_attrs", [])
 
-        if model not in COVER_MODELS or not online:
+        if model not in COVER_MODELS:
             continue
         # 仅当网关为该型号提供了方向参数时才创建实体
         if get_attr_value(dev_attrs, CURTAIN_DIR_ATTR) is None:
@@ -87,7 +87,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class HabitatCurtainDirection(SelectEntity, RestoreEntity):
+class HabitatCurtainDirection(HabitatAvailabilityMixin, SelectEntity, RestoreEntity):
     """窗帘电机方向：正常 / 反向。"""
 
     _attr_options = OPTIONS

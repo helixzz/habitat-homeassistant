@@ -19,6 +19,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import HabitatAPI
 from .const import DOMAIN, COVER_MODELS
+from .helpers import HabitatAvailabilityMixin
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ async def async_setup_entry(
         device_uid = device.get("deviceUid", "")
         online = device.get("online", False)
 
-        if model in COVER_MODELS and online:
+        if model in COVER_MODELS:
             dev_attrs = device.get("dev_attrs", [])
             name = device_uid
             for attr in dev_attrs:
@@ -58,7 +59,7 @@ async def async_setup_entry(
     async_add_entities(covers)
 
 
-class HabitatCover(CoverEntity):
+class HabitatCover(HabitatAvailabilityMixin, CoverEntity):
     """Representation of a Habitat curtain."""
 
     def __init__(

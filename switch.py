@@ -22,6 +22,7 @@ from .const import (
     SWITCH_CHANNEL_FALLBACK,
     SWITCH_MODELS_HIDDEN_BY_DEFAULT,
 )
+from .helpers import HabitatAvailabilityMixin
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ async def async_setup_entry(
         device_uid = device.get("deviceUid", "")
         online = device.get("online", False)
         
-        if model in SWITCH_MODELS and online:
+        if model in SWITCH_MODELS:
             dev_attrs = device.get("dev_attrs", [])
             name = device_uid
             for attr in dev_attrs:
@@ -97,7 +98,7 @@ async def async_setup_entry(
     async_add_entities(switches)
 
 
-class HabitatSwitch(SwitchEntity):
+class HabitatSwitch(HabitatAvailabilityMixin, SwitchEntity):
     """Representation of a Habitat switch."""
 
     def __init__(

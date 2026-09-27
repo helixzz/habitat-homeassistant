@@ -12,7 +12,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import HabitatAPI
 from .const import DOMAIN, PANEL_5IN1_MODELS, FAN_LEVEL_AUTO
-from .helpers import get_attr_value, is_main_panel
+from .helpers import HabitatAvailabilityMixin, get_attr_value, is_main_panel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ async def async_setup_entry(
         online = device.get("online", False)
         dev_attrs = device.get("dev_attrs", [])
 
-        if model not in PANEL_5IN1_MODELS or not online or not is_main_panel(dev_attrs):
+        if model not in PANEL_5IN1_MODELS or not is_main_panel(dev_attrs):
             continue
 
         name = device_uid
@@ -83,7 +83,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class HabitatFan(FanEntity):
+class HabitatFan(HabitatAvailabilityMixin, FanEntity):
     """主面板新风送风：0-6 档 + 自动，对应 HA 风扇的 percentage 与 preset_mode。"""
 
     _attr_translation_key = "fresh_air"

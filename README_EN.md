@@ -231,6 +231,34 @@ Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MO
 
 ## Changelog
 
+### v0.3.5 (2026-09-27)
+
+**Fix: entities were not created while a device was offline, so they stayed "unavailable" forever after the device came back**
+
+Every platform filtered entities by `online` at creation time:
+
+```python
+if model in LIGHT_MODELS and online:      # light.py; switch/cover/sensor/... too
+    ...create entity...
+```
+
+Real-world consequence: after a firmware update, a room's 4-in-1 panel started **cutting power** to its light controller (`ZBW4CGJ` strips). The gateway marked those lights `online=false`. When the integration next reloaded, those lights were **never created** and HA kept only a `restored` placeholder. After the user re-powered the controller and the lights came back online, HA still showed them as unavailable — until another integration reload.
+
+On top of that, no entity defined `available`, so availability was decided entirely by the online state at creation time.
+
+Fix:
+
+- create entities **unconditionally** (no more `online` filter at setup)
+- new `helpers.HabitatAvailabilityMixin` provides a dynamic `available`:
+
+  ```python
+  @property
+  def available(self) -> bool:
+      return bool((self._device_data or {}).get("online", True))
+  ```
+
+  An offline device reports `unavailable` truthfully, and **recovers automatically on the next poll** when it comes back — no reload needed.
+
 ### v0.3.4 (2026-09-27)
 
 **Added: configurable poll interval (default 60s -> 15s) to reduce light/switch state lag**
