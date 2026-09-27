@@ -231,6 +231,30 @@ Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MO
 
 ## Changelog
 
+### v0.3.7 (2026-09-27)
+
+**New: panel button decoupling watchdog - panel buttons no longer cut smart light controller power**
+
+Habitat's smart panels carry two independent bindings in firmware:
+
+1. **Group binding** - the button multicasts to a Zigbee group (`ownGroupList`)
+2. **Relay binding** - the button directly actuates the panel's own relay (`bindRelayList`, purely local)
+
+When a panel's load is an **independent smart light controller** (a mains-powered CCT light/strip), binding 2 is redundant and harmful: pressing the button also cuts the controller's power, so it runs on its capacitors for a few minutes and then drops off the network (seen as "the light suddenly became unavailable" and staying that way).
+
+The integration now detects these panels and clears their relay binding:
+
+- **Criterion**: whether any Zigbee group owned by the panel lists the panel itself as a member.
+  - Not a member -> load is an independent smart controller -> decouple (button only multicasts)
+  - Is a member -> the load *is* the panel's own relay output (a dumb light) -> keep it (switching the relay is the only way to control that light)
+- **When**: on integration startup, after a gateway reconnect (firmware updates/resets clear the panel-local relay binding), or manually via the `habitat.reapply_panel_decouple` service
+- **Can be disabled** in the integration options (enabled by default)
+
+**Gateway pitfalls found and documented in the code**:
+
+- `bindRelayList` must be written as the **string** `"[]"`, not a JSON array. The array form does reach the device, but the gateway crashes while building the HTTP response (500), and repeated attempts **wedge its HTTP service** (observed ~1 minute of total unresponsiveness). The string form returns 200, sends the same empty array, and is not subject to the "skip if unchanged" rule, so one request suffices.
+- A dry run also showed the main gateway's device list already includes child-gateway devices; duplicates are now filtered so each panel is written once.
+
 ### v0.3.6 (2026-09-27)
 
 **Fix: a device that joins after the integration started never gets entities (a manual reload was required)**

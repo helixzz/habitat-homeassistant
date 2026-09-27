@@ -5,5 +5,26 @@
         "name": "Fresh Air"
       }
     }
+  },
+  "config": {
+    "step": {
+      "user": {
+        "title": "Habitat Smart Home",
+        "description": "Enter the gateway connection details."
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Habitat options",
+        "description": "Curtain direction watchdog, panel button decoupling and polling interval.",
+        "data": {
+          "poll_interval": "State polling interval (seconds)",
+          "curtain_dir_watchdog": "Curtain direction watchdog (re-send on reconnect / startup)",
+          "decouple_panel_buttons": "Decouple panel buttons (stop buttons from cutting smart light controller power)"
+        }
+      }
+    }
   }
 }

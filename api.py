@@ -100,6 +100,30 @@ class HabitatAPI:
         result = await self._request("/gateway/setDeviceAttribute", params)
         return result.get("code") == 200
 
+    async def get_groups(self) -> list:
+        """读取网关全部 Zigbee 组（/group 是独立于 /gateway 的 API 基址）。"""
+        result = await self._request("/group/getall", {})
+        return (result.get("params") or {}).get("groups") or []
+
+    async def set_device_attribute_raw(
+        self, device_uid: str, attr_name: str, value
+    ) -> int:
+        """同 set_device_attribute，但返回原始 code。
+
+        bindRelayList 是**数组**属性：网关能正确解析并下发给设备，但在拼响应时
+        会崩（回 HTTP 500）。所以这里必须把「真失败」和「成功了但响应崩了」区分开
+        —— 调用方通过返回的 code 判断，并配合「先写非空值再写空值」保证真的下发。
+        """
+        params = {
+            "params": {
+                "childGatewayId": self.uid,
+                "deviceUid": device_uid,
+                "dev_attr": {"name": attr_name, "value": value},
+            }
+        }
+        result = await self._request("/gateway/setDeviceAttribute", params)
+        return int(result.get("code") or 0)
+
     async def set_light(
         self,
         device_uid: str,
