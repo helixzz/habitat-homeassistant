@@ -152,7 +152,19 @@ async def _reapply_panel_decouple(
     device_uid: str | None = None,
     delay: float = 0.0,
 ) -> int:
-    """解除「按键不该切继电器」的面板上的本地继电器绑定。
+    """⚠️ 危险功能：解除面板按键的输出绑定（默认关闭）。
+
+    **实测副作用（v0.3.7 的教训）**：把 bindRelayList 写成空数组之后，面板按键会变成
+    **完全没有输出** —— 不只是不驱动继电器，连原本的「按键 → Zigbee 组播控制灯具」
+    也一起失效，按键彻底失灵。它**不是**「把按键改成软控制」的开关。
+
+    因此本功能**默认关闭**，只在明确知道自己在做什么、且该面板的按键可以被牺牲时开启。
+    真正的「按键既不切继电器、又能控灯」目前无软件解（需要改线或换用按键不直连继电器的
+    面板型号，例如五合一面板 / 情景开关）。
+
+    以下为原有说明（判据部分仍然成立，仅「解绑后按键仍可用」的假设是错的）：
+
+    解除「按键不该切继电器」的面板上的本地继电器绑定。
 
     面板固件里有两套彼此独立的绑定：
       ① 组绑定      —— 按键向 Zigbee 组发组播命令（ownGroupList）
@@ -269,7 +281,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 hass.async_create_task(
                     _reapply_curtain_directions(hass, entry, delay=REAPPLY_DELAY)
                 )
-            if (entry.options or {}).get(CONF_DECOUPLE_PANEL_BUTTONS, True):
+            if (entry.options or {}).get(CONF_DECOUPLE_PANEL_BUTTONS, False):
                 _LOGGER.info("网关重新上线，稍后重新解绑面板的按键继电器绑定")
                 hass.async_create_task(
                     _reapply_panel_decouple(hass, entry, delay=DECOUPLE_DELAY)
@@ -364,7 +376,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
 
     # 同理：面板固件更新/重置会清掉本地的继电器绑定，启动时补一次
-    if (entry.options or {}).get(CONF_DECOUPLE_PANEL_BUTTONS, True):
+    if (entry.options or {}).get(CONF_DECOUPLE_PANEL_BUTTONS, False):
         hass.async_create_task(
             _reapply_panel_decouple(hass, entry, delay=DECOUPLE_DELAY)
         )
