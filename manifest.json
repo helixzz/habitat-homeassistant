@@ -1,7 +1,7 @@
 {
   "domain": "habitat",
   "name": "栖息地智能家庭",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "codeowners": ["@helixzz"],
   "config_flow": true,
   "documentation": "https://github.com/helixzz/habitat-homeassistant",

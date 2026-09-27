@@ -12,6 +12,7 @@ PLATFORMS = [
     Platform.CLIMATE,
     Platform.HUMIDIFIER,
     Platform.FAN,
+    Platform.SELECT,
 ]
 
 # Default configuration
@@ -63,6 +64,11 @@ SWITCH_MODELS = [
     "SHC-8Q02-SW", "SHC-8Q03-SW", "SHC-8W01-SW", "SHC-8W02-SW", "SHC-8Q04-SW",
 ]
 COVER_MODELS = ["ZT21LGJ", "EC02000001"]
+# 窗帘电机方向参数（存在电机内，App 未暴露；网关本地 API 可写）
+# 网关属性名 curtainDir：0=正常，1=反向；写入后电机会重新校准行程（可能整程运行一次）
+CURTAIN_DIR_ATTR = "curtainDir"
+CURTAIN_DIR_NORMAL = 0
+CURTAIN_DIR_REVERSED = 1
 # 五合一传感器 (environmental)
 SENSOR_MODELS = ["ZSW5HGJ", "SHC-4J01-SW"]
 # 空调、新风、燃气
