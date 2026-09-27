@@ -22,6 +22,18 @@
 **窗帘**：`curtainState`（0/1/2）、`curtainLevel`（0–255 整数，中间值如 155 表示约 61% 开）、`curtainDir`（**电机方向**，0=正常 / 1=反向，可写）。集成已按 0–255 解析并换算为 HA 的 0–100%。
 
 - `curtainDir` 是本项目实测确认的**窗帘方向参数**：栖息地 App 未暴露该设置，但写入网关 `setDeviceAttribute` 即生效，参数保存在**电机内部**（网关不持久化、也不回读，回报值恒为 0）。写入后电机会重新校准行程：方向确实改变时整程运行一次，未变则小幅抖动确认。详见仓库 README「窗帘方向」一节。
+**面板开关**：
+
+| 属性 | 类型 | 可写 | 说明 |
+|------|------|------|------|
+| `state0`…`state6` | int | ✅ | 各路继电器 / 开关通道（面板为 0/1） |
+| `bindRelayList` | **数组** | ✅（有坑） | 按键绑定了哪几路继电器。**空数组 `[]` = 按键不再驱动继电器**（v0.3.7 解决「按键切断智能灯控器供电」的关键）。读取时网关会返回一个指针数值，不是数组内容；写入时**必须传字符串 `"[]"`**，传 JSON 数组会返回 HTTP 500（详见 `GATEWAY.md`） |
+| `ownGroupList` | 数组 | ❌ 只上行 | 按键绑定的 Zigbee 组，形如 `[{"sectionOrder":1,"groupName":"gn_<homeId>_<roomId>_<序号>"}]`，`groupName` 为空串表示无绑定。要修改只能通过 `/group/add` 重存分组 |
+| `LCsetDirection` / `LCcurrentDirection` | int | ❌ 只上行 | 本地控制方向相关；实测两种按键工作模式下都是 `0`，与按键行为无关 |
+| `stateOffset` / `sectionNums` / `levelMixColorTemp` | int | — | 描述性字段 |
+
+**分组**：`/group/getall` / `/group/add` / `/group/del`（独立于 `/gateway` 的基址）。重存分组会把绑定重新下发给面板，是修复「固件更新清掉面板本地组绑定」的唯一手段；参数必须带 `belongToDevSection`，否则会清空按键归属。
+
 - 网关到 Zigbee 的映射（由网关日志实测）：`curtainDir` → 窗帘簇 0x0102 厂商自定义命令 `0xf1`（1 字节）；`curtainState` 0/1/2 → 标准 Up/Open(0x00) / Down/Close(0x01) / Stop(0x02)；`curtainLevel` → Level Control 簇 0x0008 的 Move to Level。
 
 **多键开关**：网关返回 `state0`、`state1`… 及 `devName`，**不返回** `state0Name` 等通道名；集成用 `const.py` 中按 `model` 配置的默认通道名（如 ZSW5HGJ 五合一面板对应 按键1～5）。

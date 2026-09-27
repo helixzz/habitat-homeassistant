@@ -193,6 +193,88 @@ The script reads `gatewayPwd` from the gateway's `getgatewayproperties` (that en
 
 > ⚠️ **Security note**: the gateway's `/gateway/getgatewayproperties` returns `gatewayPwd` with no authentication, and `/gateway/setDeviceAttribute` only needs the static key plus that password to control devices. In other words, **anyone on the same LAN can read the password and control your Habitat devices**. If that matters to you, put the gateway on a separate VLAN / IoT network.
 
+## Panel buttons: stop them from cutting smart light controller power (v0.3.7+)
+
+### Symptom
+
+“The lights in room X suddenly show up as **unavailable** and never recover” - typically **right after someone pressed a panel button**.
+
+### Cause: a panel button has two independent bindings
+
+Habitat's panel firmware lets one button do two separate things:
+
+| Binding | Field | Behaviour |
+|---|---|---|
+| ① **Group binding** | `ownGroupList` | The button **multicasts to a Zigbee group** (→ independent smart light controllers) |
+| ② **Relay binding** | `bindRelayList` | The button **directly actuates the panel's own relay** (purely local) |
+
+When a panel drives an **independent smart light controller** (a mains-powered CCT light/strip):
+
+- ① is the correct way to control the light ✅
+- ② is redundant, and pressing the button **also cuts the controller's power** ✗
+
+The controller survives on its capacitors for **about 7 minutes** before the gateway marks it offline. So: press the button → the light goes out immediately → a few minutes later the controller drops off the network → and it stays offline until the relay closes again.
+
+> Measured timeline (bedroom downlight):
+> ```
+> 18:55:33  button pressed, relay state6: 1→0, light goes out
+> 19:00:22  controller online=True (5th minute - still running on capacitors)
+> 19:03:33  controller online=False (offline after ~7 minutes)
+> ```
+
+### Criterion: does the panel appear in its own groups?
+
+| Case | Meaning | Action |
+|---|---|---|
+| None of the groups owned by the panel list **the panel itself** | Load is an **independent smart controller** | **Decouple** (button only multicasts) ✅ |
+| A group owned by the panel lists **the panel itself** | Load *is* the panel's **own relay output** (a dumb light) | **Keep** (switching the relay is the only way to control that light) ✅ |
+
+Measured classification (14 groups / 45 devices):
+
+```
+DECOUPLE  living/dining, guest, study, master 5-in-1 panels
+          entry 1+4 panel, entry 1-gang, master 2-gang switch
+  KEEP    kitchen 2-gang, master-bath 2-gang, master-bath 1-gang x2   ← dumb light loads
+```
+
+> “The kitchen button still switches a relay” is **not a fault**: the kitchen light is a dumb light wired to that 2-gang switch's own relay output, so switching the relay is the only way to control it (this is also why it takes about a second - the path is “multicast → the panel executes it itself”).
+>
+> Likewise, 5-in-1 panels never drive their relays directly from a button, which is why they never cut power even with a `bindRelayList` present.
+
+### Watchdog (persistence, v0.3.7+)
+
+`bindRelayList` lives in the **panel firmware**; a firmware update or factory reset clears it (that is exactly where the original problem came from). The integration re-applies the decoupling:
+
+- **on integration startup / HA restart** (after a 20 second settle delay)
+- **when the gateway comes back online** (a poll failing then succeeding)
+
+It can be disabled in the integration **options** (`面板按键解绑`, enabled by default), or triggered manually:
+
+```yaml
+service: habitat.reapply_panel_decouple
+# optional: only one panel
+data:
+  device_uid: B0FD0BE01103C11A
+```
+
+### ⚠️ This attribute must be written as a string
+
+The gateway's value parsing for this attribute is quirky (see [GATEWAY.md](GATEWAY.md)):
+
+| Form | HTTP | Downlinked? | Side effects |
+|---|---|---|---|
+| JSON array `[]` | **500** (gateway crashes building the response) | Yes | Repeated attempts **wedge the gateway's HTTP service** (~1 minute unresponsive in testing); and it is **silently skipped** when the database already holds `[]` |
+| String `"[]"` | **200** | Yes | None; a single request is enough ✅ |
+
+### How to verify
+
+Press a panel button:
+
+- ✅ **no relay click**, connected lights do not blink = decoupled
+- ❌ still clicks = not decoupled (check the integration log for “已解除面板 X 的按键继电器绑定”)
+
+You can also watch the gateway attributes: once decoupled, `state1` / `state6` stay unchanged when the button is pressed.
+
 ## Troubleshooting
 
 ### Log shows “blocking call to import_module” or integration path is habitat-homeassistant
@@ -213,6 +295,16 @@ The integration sets `"import_executor": true` in `manifest.json` to reduce even
 2. Check the gateway IP
 3. Try `ping <gateway-ip>`
 
+### Lights become unavailable after a button press and never recover
+
+The panel's **relay binding** is cutting power to the smart light controller - see “[Panel buttons](#panel-buttons-stop-them-from-cutting-smart-light-controller-power-v037)” above. v0.3.7+ decouples automatically; you can also run:
+
+```yaml
+service: habitat.reapply_panel_decouple
+```
+
+After decoupling you may need to **restore power to the controller** (press the panel button once so the relay closes again, or power-cycle that circuit); it recovers once it is back online.
+
 ### Device not online
 
 1. Confirm the device is online in the Habitat app
@@ -220,6 +312,8 @@ The integration sets `"import_executor": true` in `manifest.json` to reduce even
 3. Reload the integration
 
 ## Development
+
+> 📖 **See [GATEWAY.md](GATEWAY.md) for the reverse-engineered gateway API reference** - endpoint list, the two attribute-downlink handler naming schemes (`attr_set_<name>` / `privAttr_<name>_down`), the array attribute writing pitfall, the group API and debugging methods.
 
 ### Local development
 
