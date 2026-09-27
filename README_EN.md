@@ -231,6 +231,25 @@ Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MO
 
 ## Changelog
 
+### v0.3.2 (2026-09-27)
+
+**Fix: a fully-open curtain always showed as closed in HA (`curtainLevel = 0` treated as missing)**
+
+The gateway's `curtainLevel` only has a `value` field (no `valueStr`), and `cover.py` did:
+
+```python
+raw = attr.get("value") or attr.get("valueStr")
+```
+
+`curtainLevel = 0` means **fully open**, but `0` is falsy, so `raw` became `None` and the update was **skipped** — the entity kept its previous `_level`. Once a curtain reached fully open, its HA position/state stuck at the old value (typically "physically open, HA shows closed").
+
+Measured (study, a curtain with normal direction): command "close" → gateway level **254**; command "open" → level **0**. The vendor's level semantics (0=open / 255=closed) are the **opposite** of HA's position semantics (0=closed / 100=open).
+
+Fix:
+
+- `cover.py` now uses `is None` (light.py already did; switch.py's channel-name parsing fixed too)
+- Confirmed as a consequence: **every curtain needs "反向 - 窗帘" ticked** in the integration options; that is unrelated to the motor direction `curtainDir` (a different setting, only needed for rooms that were installed reversed)
+
 ### v0.3.1 (2026-09-27)
 
 **Fix: every entity stopped updating after the integration loaded (critical)**
