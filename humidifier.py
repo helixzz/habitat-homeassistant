@@ -28,7 +28,7 @@ async def async_setup_entry(
     primary_uid = data.get("primary_uid", "")
     default_api: HabitatAPI = data["api"]
     coordinator: DataUpdateCoordinator = data["coordinator"]
-    gateway_identifier: str = data["gateway_identifier"]
+    gateway_device_id: str = data["gateway_device_id"]
     devices = coordinator.data or []
 
     entities = []
@@ -53,7 +53,7 @@ async def async_setup_entry(
                 primary_uid,
                 default_api,
                 coordinator,
-                gateway_identifier,
+                gateway_device_id,
                 device_uid,
                 name,
                 device,
@@ -76,7 +76,7 @@ class HabitatHumidifier(HumidifierEntity):
         primary_uid: str,
         default_api: HabitatAPI,
         coordinator: DataUpdateCoordinator,
-        gateway_identifier: str,
+        gateway_device_id: str,
         device_uid: str,
         device_name: str,
         device_data: dict,
@@ -85,7 +85,7 @@ class HabitatHumidifier(HumidifierEntity):
         self._primary_uid = primary_uid
         self._default_api = default_api
         self._coordinator = coordinator
-        self._gateway_identifier = gateway_identifier
+        self._gateway_device_id = gateway_device_id
         self._device_uid = device_uid
         self._device_name = device_name
         self._device_data = device_data
@@ -134,7 +134,7 @@ class HabitatHumidifier(HumidifierEntity):
             name=self._device_name,
             manufacturer="栖息地",
             model="五合一面板",
-            via_device=(DOMAIN, self._gateway_identifier),
+            via_device_id=self._gateway_device_id,
         )
 
     async def async_set_humidity(self, humidity: int) -> None:

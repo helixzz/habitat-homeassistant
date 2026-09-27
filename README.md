@@ -231,6 +231,27 @@ python3 tools/set_curtain_direction.py --host 172.16.33.27 \
 
 ## 更新日志
 
+### v0.3.1 (2026-09-27)
+
+**修复：集成加载后所有实体只更新一次就再也不刷新（严重 bug）**
+
+`DataUpdateCoordinator._async_refresh()` 只在「存在监听者」时才会安排下一次刷新：
+
+```python
+if not auth_failed and self._listeners and not self.hass.is_stopping:
+    self._schedule_refresh()
+```
+
+本集成的实体是普通实体（自己在 `async_update` 里读 `coordinator.data`），从不调用 `async_add_listener`，于是 `_listeners` 恒为空 —— **协调器只做一次首次拉取，之后就永久停摆**。表现为：集成加载/重载后所有传感器、开关、灯的状态都停在那一刻，只有被操作过的设备（例如窗帘）因为命令路径会 `async_request_refresh()` 才偶尔更新。
+
+这是长期存在的架构问题，与本次窗帘方向改动无关。修复方式是在 setup 时挂一个空监听者，把周期性轮询真正打开。
+
+其他修复：
+
+- 卸载集成时调用 `coordinator.async_shutdown()`，避免残留定时器；`hass.data` 清理改为 `pop(..., None)` 容错
+- `via_device` 弃用告警 → 改用 `via_device_id`（HA 2027.8 会移除旧参数）
+- `CONCENTRATION_PARTS_PER_MILLION` 弃用 → 改用等值字符串 `"ppm"`
+
 ### v0.3.0 (2026-09-27)
 
 - **支持 HACS 自定义仓库**：新增 `hacs.json`（`content_in_root`）、品牌图 `brand/icon.png`、manifest 补 `issue_tracker`；README 增加 HACS 安装与升级说明

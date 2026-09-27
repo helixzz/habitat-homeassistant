@@ -34,7 +34,7 @@ async def async_setup_entry(
     primary_uid = data.get("primary_uid", "")
     default_api: HabitatAPI = data["api"]
     coordinator: DataUpdateCoordinator = data["coordinator"]
-    gateway_identifier: str = data["gateway_identifier"]
+    gateway_device_id: str = data["gateway_device_id"]
     devices = coordinator.data or []
 
     inverted_uids = set(
@@ -54,7 +54,7 @@ async def async_setup_entry(
                     name = attr.get("value", device_uid)
                     break
             inverted = device_uid in inverted_uids
-            covers.append(HabitatCover(apis_by_uid, primary_uid, default_api, coordinator, gateway_identifier, device_uid, name, device, inverted))
+            covers.append(HabitatCover(apis_by_uid, primary_uid, default_api, coordinator, gateway_device_id, device_uid, name, device, inverted))
     async_add_entities(covers)
 
 
@@ -67,7 +67,7 @@ class HabitatCover(CoverEntity):
         primary_uid: str,
         default_api: HabitatAPI,
         coordinator: DataUpdateCoordinator,
-        gateway_identifier: str,
+        gateway_device_id: str,
         device_uid: str,
         name: str,
         device_data: dict,
@@ -78,7 +78,7 @@ class HabitatCover(CoverEntity):
         self._primary_uid = primary_uid
         self._default_api = default_api
         self._coordinator = coordinator
-        self._gateway_identifier = gateway_identifier
+        self._gateway_device_id = gateway_device_id
         self._device_uid = device_uid
         self._name = name
         self._device_data = device_data
@@ -166,7 +166,7 @@ class HabitatCover(CoverEntity):
             name=self._name,
             manufacturer="栖息地",
             model="电动窗帘",
-            via_device=(DOMAIN, self._gateway_identifier),
+            via_device_id=self._gateway_device_id,
         )
 
     async def _refresh_from_gateway(self) -> None:

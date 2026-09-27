@@ -196,6 +196,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # ⚠️ 必须保留一个监听者，否则协调器只刷新一次就永久停摆。
+    # DataUpdateCoordinator._async_refresh() 的 finally 分支是：
+    #     if not auth_failed and self._listeners and not self.hass.is_stopping:
+    #         self._schedule_refresh()
+    # 也就是说「没有监听者 => 不再安排下一次刷新」。本集成的实体是普通实体
+    # （自己在 async_update 里读 coordinator.data），从不调用 async_add_listener，
+    # 所以 _listeners 一直为空 —— 结果是集成加载后除了首次拉取之外再也不会轮询，
+    # 所有传感器/开关/灯的状态会永久停在加载那一刻。
+    # 这里挂一个空监听者，把周期性轮询真正打开。
+    entry.async_on_unload(coordinator.async_add_listener(lambda: None))
+
     # 启动时也补一次（HA 与网关一起断电重启时，「重连」事件可能观察不到）
     if (entry.options or {}).get(CONF_CURTAIN_DIR_WATCHDOG, True):
         hass.async_create_task(
@@ -223,5 +234,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
+        # 用 pop(..., None)：正常卸载时 entry.async_on_unload 已经跑过，
+        # 这里只是兜底，不应该因为键缺失而抛 KeyError 让卸载失败。
+        data = (hass.data.get(DOMAIN) or {}).pop(entry.entry_id, None) or {}
+        coordinator = data.get("coordinator")
+        if coordinator is not None:
+            await coordinator.async_shutdown()
     return unload_ok

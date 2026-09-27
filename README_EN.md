@@ -231,6 +231,27 @@ Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MO
 
 ## Changelog
 
+### v0.3.1 (2026-09-27)
+
+**Fix: every entity stopped updating after the integration loaded (critical)**
+
+`DataUpdateCoordinator._async_refresh()` only schedules the next refresh when there are listeners:
+
+```python
+if not auth_failed and self._listeners and not self.hass.is_stopping:
+    self._schedule_refresh()
+```
+
+This integration's entities are plain entities (they read `coordinator.data` in `async_update`) and never call `async_add_listener`, so `_listeners` stayed empty — **the coordinator did exactly one initial fetch and then stopped polling forever**. Symptom: after load/reload every sensor, switch and light keeps the value it had at that moment, and only devices you actively command (e.g. covers) update occasionally via `async_request_refresh()`.
+
+Long-standing architectural issue, unrelated to the curtain-direction work. Fixed by registering a no-op listener at setup so periodic polling actually runs.
+
+Also:
+
+- call `coordinator.async_shutdown()` on unload; use `pop(..., None)` when clearing `hass.data`
+- deprecated `via_device` → `via_device_id` (HA 2027.8 removes the old parameter)
+- deprecated `CONCENTRATION_PARTS_PER_MILLION` → equivalent `"ppm"` string
+
 ### v0.3.0 (2026-09-27)
 
 - **HACS custom repository support**: added `hacs.json` (`content_in_root`), `brand/icon.png` and `issue_tracker` in the manifest; README now documents HACS install/upgrade
