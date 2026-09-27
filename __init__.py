@@ -16,7 +16,9 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .const import (
     CONF_CURTAIN_DIR_OVERRIDES,
     CONF_CURTAIN_DIR_WATCHDOG,
+    CONF_POLL_INTERVAL,
     CURTAIN_DIR_ATTR,
+    DEFAULT_POLL_INTERVAL,
     DEFAULT_PORT,
     DOMAIN,
     PLATFORMS,
@@ -164,12 +166,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 )
         return devices
 
+    # 轮询间隔可配置：网关没有推送接口，非 HA 发起的变更（物理开关/面板/栖息地 App）
+    # 只能等下一次轮询才会反映到 HA，所以间隔直接决定「看起来有多及时」。
+    try:
+        poll_interval = int(
+            (entry.options or {}).get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL)
+            or DEFAULT_POLL_INTERVAL
+        )
+    except (TypeError, ValueError):
+        poll_interval = DEFAULT_POLL_INTERVAL
+    if poll_interval < 1:
+        poll_interval = DEFAULT_POLL_INTERVAL
+
     coordinator = DataUpdateCoordinator(
         hass,
         _LOGGER,
         name=DOMAIN,
         update_method=_async_fetch_devices,
-        update_interval=timedelta(seconds=60),
+        update_interval=timedelta(seconds=poll_interval),
     )
     await coordinator.async_config_entry_first_refresh()
 
