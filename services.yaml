@@ -11,3 +11,22 @@ reapply_curtain_direction:
       example: B0FD0BE011051113
       selector:
         text:
+
+reapply_panel_decouple:
+  name: 重新解绑面板按键的继电器
+  description: >-
+    面板固件里除了「按键 → Zigbee 组播」的组绑定，还有一套「按键 → 吸合自己的
+    继电器」的本地绑定（bindRelayList）。当面板的负载是**独立智能灯控器**（常火
+    供电）时，这套绑定是多余的，而且按下按键会切断灯控器的供电，灯控器靠电容撑
+    几分钟后掉线（表现为灯「忽然不可用」）。本服务把这类面板的继电器绑定清空。
+
+    会自动跳过「组里包含面板自己」的设备 —— 那类面板的负载就是它自己的继电器
+    输出（普通灯），切继电器是唯一能开关那盏灯的方式，必须保留。
+  fields:
+    device_uid:
+      name: 设备 ID
+      description: 只处理指定面板（网关的 deviceUid）；留空则处理全部符合条件的面板。
+      required: false
+      example: B0FD0BE01103C11A
+      selector:
+        text:

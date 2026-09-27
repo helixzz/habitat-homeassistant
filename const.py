@@ -83,6 +83,28 @@ CURTAIN_DIR_REVERSED = 1
 CONF_CURTAIN_DIR_OVERRIDES = "curtain_dir_overrides"
 CONF_CURTAIN_DIR_WATCHDOG = "curtain_dir_watchdog"
 SERVICE_REAPPLY_CURTAIN_DIR = "reapply_curtain_direction"
+
+# --- 面板「按键直控继电器」解绑 -------------------------------------------------
+# 面板固件里有两套彼此独立的绑定：
+#   ① 组绑定     按键 → 向 Zigbee 组发组播命令（ownGroupList）
+#   ② 继电器绑定 bindRelayList，按键 → 吸合面板自己的继电器（本地行为）
+# 当某面板名下所有组的成员**都不包含它自己**时，说明它的负载是**独立的智能灯控器**
+# （常火供电），按键只需发组播；此时如果继电器绑定还在，按键会额外切断灯控器的
+# 供电 —— 灯控器靠电容撑几分钟后掉线（表现为「灯忽然不可用」）。
+# 把 bindRelayList 写成空数组即可解绑。注意：网关**值没变化就不下发**，所以必须先
+# 写一个非空值制造变化，再写空值。
+BIND_RELAY_LIST_ATTR = "bindRelayList"
+# 解绑要下发「空数组」。注意必须传**字符串** "[]" 而不是 Python 列表：
+#   * 传列表：网关能正确下发，但拼 HTTP 响应时会崩（返回 500）——反复触发会把
+#     网关的 HTTP 服务压死（实测出现过一分钟不可用）。
+#   * 传字符串：返回 200 不崩，同样下发 zgb_val:0，而且**不受「值没变就跳过」
+#     限制**（列表写法在数据库里已经是 [] 时会静默不下发）。
+# 所以这里用字符串形式。
+BIND_RELAY_LIST_NONE = "[]"
+CONF_DECOUPLE_PANEL_BUTTONS = "decouple_panel_buttons"
+SERVICE_REAPPLY_PANEL_DECOUPLE = "reapply_panel_decouple"
+# 面板解绑继电器绑定的等待时间（等 Zigbee 网络稳定）
+DECOUPLE_DELAY = 20.0
 # 五合一传感器 (environmental)
 SENSOR_MODELS = ["ZSW5HGJ", "SHC-4J01-SW"]
 # 空调、新风、燃气

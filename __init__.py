@@ -15,15 +15,21 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
+    BIND_RELAY_LIST_ATTR,
+    BIND_RELAY_LIST_NONE,
     CONF_CURTAIN_DIR_OVERRIDES,
     CONF_CURTAIN_DIR_WATCHDOG,
+    CONF_DECOUPLE_PANEL_BUTTONS,
     CONF_POLL_INTERVAL,
     CURTAIN_DIR_ATTR,
+    DECOUPLE_DELAY,
     DEFAULT_POLL_INTERVAL,
     DEFAULT_PORT,
     DOMAIN,
     PLATFORMS,
     SERVICE_REAPPLY_CURTAIN_DIR,
+    SERVICE_REAPPLY_PANEL_DECOUPLE,
+    SWITCH_MODELS,
 )
 from .api import HabitatAPI
 
@@ -140,6 +146,101 @@ async def _reapply_curtain_directions(
     return written
 
 
+async def _reapply_panel_decouple(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    device_uid: str | None = None,
+    delay: float = 0.0,
+) -> int:
+    """解除「按键不该切继电器」的面板上的本地继电器绑定。
+
+    面板固件里有两套彼此独立的绑定：
+      ① 组绑定      —— 按键向 Zigbee 组发组播命令（ownGroupList）
+      ② 继电器绑定  —— bindRelayList，按键直接吸合面板自己的继电器（纯本地行为）
+
+    判断该面板需不需要 ②：看它名下所有 Zigbee 组的成员里**有没有它自己**。
+      * 组里**没有**自己 → 负载是独立的智能灯控器（常火供电），按键只需发组播；
+        此时如果 ② 还在，按键会顺带切断灯控器的供电，灯控器靠电容撑几分钟后掉线
+        （用户看到的就是「灯忽然不可用」）→ 必须解绑。
+      * 组里**有**自己 → 负载就是它自己的继电器输出（普通灯），切继电器是唯一能
+        开关那盏灯的方式 → 必须保留，跳过。
+
+    下发时值必须传**字符串** "[]"，不能传 Python 列表 —— 列表虽然也能下发，但网关
+    拼 HTTP 响应时会崩（500），反复触发会把它的 HTTP 服务压死；字符串形式返回 200、
+    同样下发 zgb_val:0，而且不受「值没变就跳过」限制，一条请求即可。
+    """
+    if delay:
+        await asyncio.sleep(delay)
+
+    data = hass.data.get(DOMAIN, {}).get(entry.entry_id) or {}
+    coordinator: DataUpdateCoordinator | None = data.get("coordinator")
+    apis_by_uid: dict = data.get("apis_by_uid") or {}
+    primary_uid: str = data.get("primary_uid", "")
+    default_api: HabitatAPI | None = data.get("api")
+    if default_api is None:
+        return 0
+
+    try:
+        groups = await default_api.get_groups()
+    except Exception:  # noqa: BLE001 - 看护失败不应影响集成加载
+        _LOGGER.exception("读取分组失败，跳过面板按键解绑")
+        return 0
+
+    # deviceUid -> 该面板名下各组的成员列表
+    owned: dict[str, list[list[str]]] = {}
+    for group in groups or []:
+        owner = ((group.get("belongToDevSection") or {}).get("deviceUid")) or ""
+        if not owner:
+            continue
+        members = [
+            (m.get("deviceUid") if isinstance(m, dict) else m)
+            for m in (group.get("members") or [])
+        ]
+        owned.setdefault(owner, []).append([m for m in members if m])
+
+    devices = (coordinator.data if coordinator else None) or []
+    written = 0
+    seen: set[str] = set()
+    for device in devices:
+        uid = device.get("deviceUid") or ""
+        if not uid or uid in seen:  # 主网关的列表里已包含子网设备，去重
+            continue
+        seen.add(uid)
+        if device_uid and uid != device_uid:
+            continue
+        if device.get("model") not in SWITCH_MODELS:
+            continue
+        attr_names = {a.get("name") for a in (device.get("dev_attrs") or [])}
+        if BIND_RELAY_LIST_ATTR not in attr_names:
+            continue  # 该型号没有继电器绑定字段
+        panel_groups = owned.get(uid)
+        if not panel_groups:
+            continue  # 按键没有任何组绑定，不处理
+        if any(uid in members for members in panel_groups):
+            _LOGGER.debug(
+                "面板 %s 的按键负载是自身继电器（普通灯），保留继电器绑定", uid
+            )
+            continue
+
+        api = _resolve_api(uid, apis_by_uid, primary_uid, default_api, devices)
+        try:
+            code = await api.set_device_attribute_raw(
+                uid, BIND_RELAY_LIST_ATTR, BIND_RELAY_LIST_NONE
+            )
+        except Exception:  # noqa: BLE001
+            _LOGGER.exception("解绑面板 %s 的按键继电器绑定失败", uid)
+            continue
+        if code == 200:
+            written += 1
+            _LOGGER.info(
+                "已解除面板 %s 的按键继电器绑定（按键改为只发 Zigbee 组播）", uid
+            )
+        else:
+            _LOGGER.warning("解绑面板 %s 失败，网关返回 %s", uid, code)
+        await asyncio.sleep(0.5)  # 稍微错开，别把网关的 HTTP 服务打满
+    return written
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up 栖息地 from a config entry."""
     config = entry.data
@@ -167,6 +268,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 _LOGGER.info("网关重新上线，稍后重新下发窗帘方向")
                 hass.async_create_task(
                     _reapply_curtain_directions(hass, entry, delay=REAPPLY_DELAY)
+                )
+            if (entry.options or {}).get(CONF_DECOUPLE_PANEL_BUTTONS, True):
+                _LOGGER.info("网关重新上线，稍后重新解绑面板的按键继电器绑定")
+                hass.async_create_task(
+                    _reapply_panel_decouple(hass, entry, delay=DECOUPLE_DELAY)
                 )
         return devices
 
@@ -257,6 +363,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _reapply_curtain_directions(hass, entry, delay=REAPPLY_DELAY)
         )
 
+    # 同理：面板固件更新/重置会清掉本地的继电器绑定，启动时补一次
+    if (entry.options or {}).get(CONF_DECOUPLE_PANEL_BUTTONS, True):
+        hass.async_create_task(
+            _reapply_panel_decouple(hass, entry, delay=DECOUPLE_DELAY)
+        )
+
     async def _async_reapply_service(call: ServiceCall) -> None:
         """手动重新下发窗帘方向。"""
         target = call.data.get("device_uid")
@@ -268,6 +380,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             DOMAIN,
             SERVICE_REAPPLY_CURTAIN_DIR,
             _async_reapply_service,
+            schema=SERVICE_REAPPLY_SCHEMA,
+        )
+
+    async def _async_decouple_service(call: ServiceCall) -> None:
+        """手动重新解绑面板的按键继电器绑定。"""
+        target = call.data.get("device_uid")
+        for config_entry in hass.config_entries.async_entries(DOMAIN):
+            await _reapply_panel_decouple(hass, config_entry, device_uid=target)
+
+    if not hass.services.has_service(DOMAIN, SERVICE_REAPPLY_PANEL_DECOUPLE):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_REAPPLY_PANEL_DECOUPLE,
+            _async_decouple_service,
             schema=SERVICE_REAPPLY_SCHEMA,
         )
 

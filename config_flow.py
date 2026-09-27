@@ -15,6 +15,7 @@ from .api import HabitatAPI, HabitatAPIError
 from .const import (
     CONF_CURTAIN_DIR_OVERRIDES,
     CONF_CURTAIN_DIR_WATCHDOG,
+    CONF_DECOUPLE_PANEL_BUTTONS,
     CONF_POLL_INTERVAL,
     DEFAULT_HOST,
     DEFAULT_POLL_INTERVAL,
@@ -99,6 +100,13 @@ def _options_data_from_input(
             user_input.get(
                 CONF_CURTAIN_DIR_WATCHDOG,
                 current_options.get(CONF_CURTAIN_DIR_WATCHDOG, True),
+            )
+        ),
+        # 面板按键解绑：面板固件更新/重置会清掉本地继电器绑定，勾选后自动补发
+        CONF_DECOUPLE_PANEL_BUTTONS: bool(
+            user_input.get(
+                CONF_DECOUPLE_PANEL_BUTTONS,
+                current_options.get(CONF_DECOUPLE_PANEL_BUTTONS, True),
             )
         ),
         CONF_POLL_INTERVAL: _coerce_poll_interval(
@@ -248,6 +256,10 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
                 CONF_CURTAIN_DIR_WATCHDOG,
                 default=bool(opts.get(CONF_CURTAIN_DIR_WATCHDOG, True)),
             ): bool,
+            vol.Optional(
+                CONF_DECOUPLE_PANEL_BUTTONS,
+                default=bool(opts.get(CONF_DECOUPLE_PANEL_BUTTONS, True)),
+            ): bool,
         }
         # 轮询间隔：网关无推送接口，非 HA 发起的变更只能靠轮询发现；
         # 间隔越短越及时，代价是更多局域网流量（设备列表约 85 KB / 次）。
@@ -277,7 +289,7 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
             return self.async_show_form(
                 step_id="init",
                 data_schema=vol.Schema(schema),
-                description_placeholders={"msg": "当前未发现窗帘设备。上方可修改主网关连接（主机/IP、端口、UID、key、密码）；下方可配置子网关。主机建议填主机名或 DHCP 保留名。「poll_interval」= 状态轮询间隔（秒，默认 15）：网关没有推送接口，物理开关/面板/栖息地 App 的变更只能靠轮询发现，间隔越短越及时（设备列表约 85 KB/次）。"},
+                description_placeholders={"msg": "当前未发现窗帘设备。上方可修改主网关连接（主机/IP、端口、UID、key、密码）；下方可配置子网关。主机建议填主机名或 DHCP 保留名。「poll_interval」= 状态轮询间隔（秒，默认 15）：网关没有推送接口，物理开关/面板/栖息地 App 的变更只能靠轮询发现，间隔越短越及时（设备列表约 85 KB/次）。第二个勾选 = 自动解除「按键不该切继电器」的面板上的本地继电器绑定（负载是独立智能灯控器的面板；负载是普通灯的面板会自动跳过）。"},
             )
         def key_for(uid: str, name: str) -> str:
             return f"反向 - {name} ({uid[-8:]})"
