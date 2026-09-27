@@ -231,6 +231,27 @@ Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MO
 
 ## Changelog
 
+### v0.3.3 (2026-09-27)
+
+**Fix: `curtainLevel <= 100` was misinterpreted as a percentage**
+
+`cover.py` contained this heuristic:
+
+```python
+if 0 <= level <= 100:
+    level = int((level / 100) * 255)
+```
+
+But the gateway's `curtainLevel` is a plain **0-255** value (observed 0 / 5 / 7 / 122 / 191 / 254 / 255), and both the local API and the Habitat App use 0-255. Every raw value <= 100 was therefore rescaled and the position came out wrong:
+
+| gateway level | real opening | old display | correct |
+|---|---|---|---|
+| 5 | 98% | 95% | 98% |
+| 50 | 80% | **50%** | 80% |
+| 100 | 61% | **0%** | 61% |
+
+The heuristic has been removed; the value is used as 0-255 directly.
+
 ### v0.3.2 (2026-09-27)
 
 **Fix: a fully-open curtain always showed as closed in HA (`curtainLevel = 0` treated as missing)**

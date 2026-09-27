@@ -127,8 +127,10 @@ class HabitatCover(CoverEntity):
                 continue
             try:
                 level = int(float(raw))
-                if 0 <= level <= 100:
-                    level = int((level / 100) * 255)
+                # ⚠️ 不要再做「level <= 100 就当成百分比再缩放」的猜测。
+                # 实测网关下发的 curtainLevel 就是原始 0-255（观测到 0/5/7/122/191/254/255），
+                # 本地 API 与栖息地 App 也都用 0-255。旧启发式会把 level=5（几乎全开）
+                # 缩放成 12、把 level=50（约 80% 开）缩放成 127，位置直接算错。
                 self._level = self._gateway_to_display_level(max(0, min(255, level)))
             except (TypeError, ValueError):
                 pass
