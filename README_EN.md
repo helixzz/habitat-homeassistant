@@ -39,6 +39,7 @@ Copy the following from this repository into your Home Assistant config director
 - `helpers.py`
 - `light.py`, `switch.py`, `cover.py`, `sensor.py`
 - `number.py`, `climate.py`, `humidifier.py`, `fan.py`, `select.py`
+- `services.yaml` (UI descriptions for the `reapply_curtain_direction` service)
 - The `translations/` directory (including `en.json` for English entity names)
 
 **Optional:**
@@ -51,6 +52,7 @@ Example (replace `config` with your HA config path):
 mkdir -p config/custom_components/habitat
 cp __init__.py config_flow.py manifest.json const.py api.py helpers.py \
    light.py switch.py cover.py sensor.py number.py climate.py humidifier.py fan.py select.py \
+   services.yaml \
    config/custom_components/habitat/
 cp -r translations config/custom_components/habitat/
 cp -r brand config/custom_components/habitat/ 2>/dev/null || true
@@ -111,12 +113,32 @@ A curtain motor's direction (normal/reversed) is stored **inside the motor**. Ne
 |-----------|---------|--------|
 | `curtainDir` | Motor direction | `0` = normal, `1` = reversed |
 
-The write takes effect immediately and the motor re-calibrates its travel: if the direction actually changes it usually performs **one full run**; if it does not change, it only jogs slightly to acknowledge. The setting lives in the motor, so it survives gateway restarts and integration reloads.
+The write takes effect immediately and the motor re-calibrates its travel: if the direction actually changes it usually performs **one full run**; if it does not change, it only jogs slightly to acknowledge.
+
+> ⚠️ **Important: the gateway does not persist this value.** It merely forwards `curtainDir` to the motor (`gm_down_dev_set_attr` → `attr_set_curtain_dir` → Zigbee `0xf1`) and **never writes it to its database**; the gateway's own attribute cache (`prevDevAttrList`) only tracks `curtainState` / `curtainLevel`. So a **gateway restart, power loss, or a same-named cloud push can reset the direction back to 0**. Since v0.2.1 the integration solves this with a direction watchdog (below).
 
 **From HA**: every curtain device gets a “窗帘方向” (curtain direction) select entity with Normal/Reversed options.
 
-- The gateway **always reports `curtainDir` as 0** (it does not read the motor's stored value), so the entity state reflects the last write and is restored by `RestoreEntity` after a HA restart.
+- The gateway **always reports `curtainDir` as 0** (it does not read the motor's stored value), so the entity state reflects the last write.
 - This is a **hardware-level** fix; the integration option “反向 - curtain” is a **software-level** fix. Enabling both cancels out — normally you want only one, preferably the direction entity so the App and hardware panels become correct too.
+
+### Direction watchdog (persistence, v0.2.1+)
+
+Because the gateway cannot store the value, the integration keeps the desired direction in the config entry options (`curtain_dir_overrides`) as the source of truth and re-sends it automatically:
+
+- **on integration setup / HA restart** (after a 45 s grace period for the Zigbee network)
+- **when the gateway comes back online** (a poll going from failure to success means it restarted)
+
+It can be turned off in the integration **Options** (`方向看护`), or triggered manually:
+
+```yaml
+service: habitat.reapply_curtain_direction
+# optional: only one curtain
+data:
+  device_uid: B0FD0BE011051113
+```
+
+Re-sending when the direction is already correct makes the motor **jog slightly** to acknowledge — that is expected.
 
 **Outside HA** (script shipped in this repo):
 
@@ -172,6 +194,12 @@ Clone or copy this repo into `custom_components/habitat/`, then restart HA or re
 Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MODELS` lists.
 
 ## Changelog
+
+### v0.2.1 (2026-09-27)
+
+- **Curtain direction persistence**: the gateway does not store `curtainDir` (it only forwards it to the motor), so the direction can be reset by a gateway restart / power loss / cloud push. The integration now keeps the desired direction in the config entry options and re-sends it **on setup** and **when the gateway comes back online**
+- New `habitat.reapply_curtain_direction` service (optionally for a single `device_uid`) and a `方向看护` watchdog toggle in the integration options
+- Docs: the full evidence chain for the non-persistence and the cloud-override analysis
 
 ### v0.2.0 (2026-09-27)
 

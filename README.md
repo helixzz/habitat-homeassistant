@@ -39,6 +39,7 @@
 - `helpers.py`
 - `light.py`、`switch.py`、`cover.py`、`sensor.py`
 - `number.py`、`climate.py`、`humidifier.py`、`fan.py`、`select.py`
+- `services.yaml`（`reapply_curtain_direction` 服务的界面描述）
 - `translations/` 目录（含 `en.json`，用于英文界面实体名等）
 
 **可选：**
@@ -51,6 +52,7 @@
 mkdir -p config/custom_components/habitat
 cp __init__.py config_flow.py manifest.json const.py api.py helpers.py \
    light.py switch.py cover.py sensor.py number.py climate.py humidifier.py fan.py select.py \
+   services.yaml \
    config/custom_components/habitat/
 cp -r translations config/custom_components/habitat/
 cp -r brand config/custom_components/habitat/ 2>/dev/null || true
@@ -111,12 +113,32 @@ cp -r brand config/custom_components/habitat/ 2>/dev/null || true
 |------|------|------|
 | `curtainDir` | 电机方向 | `0` = 正常，`1` = 反向 |
 
-写入后立即生效，电机会重新校准行程：方向确实改变时通常**整程运行一次**，方向未变时只小幅抖动确认。参数保存在电机内，重启网关或重载集成都不会丢失。
+写入后立即生效，电机会重新校准行程：方向确实改变时通常**整程运行一次**，方向未变时只小幅抖动确认。
+
+> ⚠️ **重要：网关不会持久化这个值。** 网关只是把 `curtainDir` 转发给电机（调用链 `gm_down_dev_set_attr` → `attr_set_curtain_dir` → Zigbee `0xf1`），**全程不写数据库**；网关自己的属性缓存（`prevDevAttrList`）也只跟踪 `curtainState` / `curtainLevel`，不含 `curtainDir`。因此**网关重启、断电，或云端下发同名字段都可能把方向重置回 0**。v0.2.1 起集成用「方向看护」解决这个问题（见下）。
 
 **在 HA 内修改**：每个窗帘设备下会多出一个「窗帘方向」选择实体（正常/反向），切换即可。
 
-- 网关对 `curtainDir` 的**回报值恒为 0**（不回读电机内实际值），因此实体状态以「最近一次写入」为准，HA 重启后由 `RestoreEntity` 恢复。
+- 网关对 `curtainDir` 的**回报值恒为 0**（不回读电机内实际值），因此实体状态以「最近一次写入」为准。
 - 该实体是**硬件级**修正；集成选项里的「反向 - 窗帘」是**软件级**修正。两者同时开启会互相抵消，通常只需其一 —— 建议用「窗帘方向」把硬件调正，这样 App 与硬件面板也会一起变正确。
+
+### 方向看护（持久化，v0.2.1+）
+
+因为网关存不住这个值，集成把它**记在 config entry options**（`curtain_dir_overrides`）里，作为真值源，并在下列时机自动重新下发：
+
+- **集成启动 / HA 重启后**（等 45 秒让 Zigbee 网络稳定）
+- **检测到网关重新上线时**（轮询由失败转为成功 = 网关重启/重连过）
+
+可在集成**选项**中关闭（`方向看护` 复选框）。也可以手动触发：
+
+```yaml
+service: habitat.reapply_curtain_direction
+# 可选：只处理某一个窗帘
+data:
+  device_uid: B0FD0BE011051113
+```
+
+如果不想依赖 HA，也可以用脚本（`tools/set_curtain_direction.py`）配合 cron / 计划任务定期执行。注意：重新下发时若方向本来就是对的，电机会**小幅抖动确认**一下，属正常现象。
 
 **在 HA 外修改**（仓库内附带脚本）：
 
@@ -172,6 +194,12 @@ python3 tools/set_curtain_direction.py --host 172.16.33.27 \
 在 `const.py` 的 `MODEL_PLATFORMS` 及对应 `*_MODELS` 列表中添加新型号映射。
 
 ## 更新日志
+
+### v0.2.1 (2026-09-27)
+
+- **窗帘方向持久化**：网关不保存 `curtainDir`（只转发给电机），方向会在网关重启/断电/云端同步后被重置。集成现在把期望方向记在 config entry options，并在**集成启动**与**检测到网关重新上线**时自动重新下发
+- 新增服务 `habitat.reapply_curtain_direction`（可只处理指定 `device_uid`）与集成选项「方向看护」开关
+- 文档：补充网关不持久化 `curtainDir` 的完整证据链与云端可能覆盖的分析
 
 ### v0.2.0 (2026-09-27)
 

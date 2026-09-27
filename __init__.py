@@ -1,18 +1,39 @@
 """The 栖息地智能家庭 integration."""
 
+import asyncio
 import logging
 from datetime import timedelta
 
+import voluptuous as vol
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PORT
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DEFAULT_PORT, DOMAIN, PLATFORMS
+from .const import (
+    CONF_CURTAIN_DIR_OVERRIDES,
+    CONF_CURTAIN_DIR_WATCHDOG,
+    CURTAIN_DIR_ATTR,
+    DEFAULT_PORT,
+    DOMAIN,
+    PLATFORMS,
+    SERVICE_REAPPLY_CURTAIN_DIR,
+)
 from .api import HabitatAPI
 
 _LOGGER = logging.getLogger(__name__)
+
+# 网关重启后重新下发方向前的等待时间：等 Zigbee 网络与设备恢复
+REAPPLY_DELAY = 45.0
+
+SERVICE_REAPPLY_SCHEMA = vol.Schema(
+    {
+        vol.Optional("device_uid"): cv.string,
+    }
+)
 
 
 def _build_apis_by_uid(entry: ConfigEntry) -> dict[str, HabitatAPI]:
@@ -44,6 +65,75 @@ def _build_apis_by_uid(entry: ConfigEntry) -> dict[str, HabitatAPI]:
     return apis
 
 
+def _resolve_api(
+    device_uid: str,
+    apis_by_uid: dict,
+    primary_uid: str,
+    default_api: HabitatAPI,
+    devices: list | None,
+) -> HabitatAPI:
+    """按设备当前所属网关解析 API。"""
+    for device in devices or []:
+        if device.get("deviceUid") == device_uid:
+            child_uid = device.get("childGatewayId") or primary_uid
+            return (
+                apis_by_uid.get(child_uid)
+                or apis_by_uid.get(primary_uid)
+                or default_api
+            )
+    return apis_by_uid.get(primary_uid) or default_api
+
+
+async def _reapply_curtain_directions(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    device_uid: str | None = None,
+    delay: float = 0.0,
+) -> int:
+    """把 options 里记录的方向重新下发给电机。
+
+    网关本身不保存 curtainDir（只转发），所以网关重启或云端同步后可能被重置；
+    这里以 HA 的 config entry options 作为「真值源」补齐。
+    """
+    overrides: dict = (entry.options or {}).get(CONF_CURTAIN_DIR_OVERRIDES) or {}
+    if device_uid:
+        overrides = (
+            {device_uid: overrides[device_uid]}
+            if device_uid in overrides
+            else {}
+        )
+    if not overrides:
+        return 0
+
+    if delay:
+        await asyncio.sleep(delay)
+
+    data = hass.data.get(DOMAIN, {}).get(entry.entry_id) or {}
+    coordinator: DataUpdateCoordinator | None = data.get("coordinator")
+    apis_by_uid: dict = data.get("apis_by_uid") or {}
+    primary_uid: str = data.get("primary_uid", "")
+    default_api: HabitatAPI | None = data.get("api")
+    if default_api is None:
+        return 0
+    devices = (coordinator.data if coordinator else None) or []
+
+    written = 0
+    for uid, value in overrides.items():
+        api = _resolve_api(uid, apis_by_uid, primary_uid, default_api, devices)
+        try:
+            ok = await api.set_device_attribute(uid, CURTAIN_DIR_ATTR, int(value))
+        except Exception:  # noqa: BLE001 - 网络异常不应影响看护流程
+            _LOGGER.exception("重新下发窗帘方向失败: %s", uid)
+            continue
+        if ok:
+            written += 1
+        else:
+            _LOGGER.warning("重新下发窗帘方向被网关拒绝: %s -> %s", uid, value)
+    if written:
+        _LOGGER.info("已重新下发 %s 个窗帘的方向", written)
+    return written
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up 栖息地 from a config entry."""
     config = entry.data
@@ -51,11 +141,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     primary_uid = config.get("uid", "")
     api = apis_by_uid.get(primary_uid)
 
+    # 记录上一次拉取是否失败：由失败转为成功 = 网关重启/重连过
+    gateway_was_down = False
+
     async def _async_fetch_devices() -> list:
         """从主网关拉取设备列表（主网关可返回主+子网下设备）。"""
-        devices = await api.get_devices()
+        nonlocal gateway_was_down
+        try:
+            devices = await api.get_devices()
+        except Exception:
+            gateway_was_down = True
+            raise
         if not devices:
+            gateway_was_down = True
             raise UpdateFailed("Gateway returned no devices")
+        if gateway_was_down:
+            gateway_was_down = False
+            if (entry.options or {}).get(CONF_CURTAIN_DIR_WATCHDOG, True):
+                _LOGGER.info("网关重新上线，稍后重新下发窗帘方向")
+                hass.async_create_task(
+                    _reapply_curtain_directions(hass, entry, delay=REAPPLY_DELAY)
+                )
         return devices
 
     coordinator = DataUpdateCoordinator(
@@ -89,6 +195,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # 启动时也补一次（HA 与网关一起断电重启时，「重连」事件可能观察不到）
+    if (entry.options or {}).get(CONF_CURTAIN_DIR_WATCHDOG, True):
+        hass.async_create_task(
+            _reapply_curtain_directions(hass, entry, delay=REAPPLY_DELAY)
+        )
+
+    async def _async_reapply_service(call: ServiceCall) -> None:
+        """手动重新下发窗帘方向。"""
+        target = call.data.get("device_uid")
+        for config_entry in hass.config_entries.async_entries(DOMAIN):
+            await _reapply_curtain_directions(hass, config_entry, device_uid=target)
+
+    if not hass.services.has_service(DOMAIN, SERVICE_REAPPLY_CURTAIN_DIR):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_REAPPLY_CURTAIN_DIR,
+            _async_reapply_service,
+            schema=SERVICE_REAPPLY_SCHEMA,
+        )
+
     return True
 
 

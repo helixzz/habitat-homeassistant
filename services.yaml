@@ -1,0 +1,13 @@
+reapply_curtain_direction:
+  name: 重新下发窗帘方向
+  description: >-
+    把集成中记录的每个窗帘「方向」重新下发给电机。网关本身不保存 curtainDir，
+    重启或云端同步后可能被重置，用这个服务可手动补齐（方向未变时电机会小幅确认）。
+  fields:
+    device_uid:
+      name: 设备 ID
+      description: 只重新下发指定窗帘（网关的 deviceUid）；留空则处理全部已记录方向的窗帘。
+      required: false
+      example: B0FD0BE011051113
+      selector:
+        text:
