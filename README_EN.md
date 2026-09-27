@@ -138,6 +138,23 @@ data:
   device_uid: B0FD0BE011051113
 ```
 
+### ⚠️ After fixing the hardware direction you must also flip HA's “反向 - 窗帘”
+
+This motor's direction setting flips **both** the motor rotation and the position-value direction. Measured (ZT21LGJ):
+
+| `curtainDir` | Panel/App press “open” | Gateway `curtainLevel` |
+|---|---|---|
+| `0` (as installed, reversed) | physically **closes** ✗ | `0` = physically closed |
+| `1` (corrected) | physically **opens** ✓ | `0` = physically open |
+
+Therefore:
+
+- The Habitat App displays `(255 - level) / 255` (**inverted**), so once corrected the App is right in both button direction and percentage;
+- This integration does **not** invert by default, so **after correcting the hardware direction the HA position and open/close become inverted (open = 0%)**;
+- Fix: tick “反向 - 窗帘” for those covers in the integration **Options**. In other words the hardware fix and the HA software inversion are **not alternatives** — after fixing the hardware you must enable the HA inversion (before the fix the relationship was the opposite).
+
+> Measured: `curtainState=0` (close) → level 254 → physically closed; `curtainState=1` (open) → level 0 → physically open.
+
 Re-sending when the direction is already correct makes the motor **jog slightly** to acknowledge — that is expected.
 
 **Outside HA** (script shipped in this repo):
@@ -194,6 +211,10 @@ Clone or copy this repo into `custom_components/habitat/`, then restart HA or re
 Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MODELS` lists.
 
 ## Changelog
+
+### v0.2.3 (2026-09-27)
+
+- Docs: `curtainDir` flips both the motor rotation and the position-value direction, so **after fixing the hardware direction you must tick “反向 - 窗帘”** or HA's position and open/close become inverted (with the measured mapping)
 
 ### v0.2.2 (2026-09-27)
 
