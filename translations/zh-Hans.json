@@ -15,7 +15,7 @@
         "data": {
           "poll_interval": "状态轮询间隔（秒）",
           "curtain_dir_watchdog": "窗帘方向看护（网关重连/集成启动时自动补发方向）",
-          "decouple_panel_buttons": "面板按键解绑（不让按键切断智能灯控器的供电）"
+          "decouple_panel_buttons": "面板按键解绑（按键改发 Zigbee 组播控灯，不再切断灯控器供电；需该面板所属网关上已有按键分组）"
         }
       }
     }

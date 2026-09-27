@@ -289,7 +289,7 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
             return self.async_show_form(
                 step_id="init",
                 data_schema=vol.Schema(schema),
-                description_placeholders={"msg": "当前未发现窗帘设备。上方可修改主网关连接（主机/IP、端口、UID、key、密码）；下方可配置子网关。主机建议填主机名或 DHCP 保留名。「poll_interval」= 状态轮询间隔（秒，默认 15）：网关没有推送接口，物理开关/面板/栖息地 App 的变更只能靠轮询发现，间隔越短越及时（设备列表约 85 KB/次）。第二个勾选 = 自动解除「按键不该切继电器」的面板上的本地继电器绑定。**⚠️ 危险**：实测该操作会让面板按键**完全失灵**（不只是不切继电器，连 Zigbee 控灯也失效），默认关闭；只有在你确定这块面板的按键可以牺牲时才勾选。"},
+                description_placeholders={"msg": "当前未发现窗帘设备。上方可修改主网关连接（主机/IP、端口、UID、key、密码）；下方可配置子网关。主机建议填主机名或 DHCP 保留名。「poll_interval」= 状态轮询间隔（秒，默认 15）：网关没有推送接口，物理开关/面板/栖息地 App 的变更只能靠轮询发现，间隔越短越及时（设备列表约 85 KB/次）。第二个勾选 = 自动解除「按键不该切继电器」的面板上的本地继电器绑定。机制：按键默认直接吸合自己的继电器（会切断灯控器供电），写空 `bindRelayList` 后改为只发 Zigbee 组播控制智能灯。**安全前提**：该面板所属网关上必须已存在它的按键分组，否则写空会让按键失去全部输出（哑键）—— 集成现在会先检查这一点，不满足就跳过并告警。默认关闭。"},
             )
         def key_for(uid: str, name: str) -> str:
             return f"反向 - {name} ({uid[-8:]})"

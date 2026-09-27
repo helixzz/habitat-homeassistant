@@ -103,6 +103,8 @@ BIND_RELAY_LIST_ATTR = "bindRelayList"
 BIND_RELAY_LIST_NONE = "[]"
 CONF_DECOUPLE_PANEL_BUTTONS = "decouple_panel_buttons"
 SERVICE_REAPPLY_PANEL_DECOUPLE = "reapply_panel_decouple"
+# 诊断：面板的按键分组是否建在它自己所属的网关上（云端/实际网关不一致会导致配置静默失败）
+SERVICE_DIAGNOSE_PANEL_BINDINGS = "diagnose_panel_bindings"
 # 面板解绑继电器绑定的等待时间（等 Zigbee 网络稳定）
 DECOUPLE_DELAY = 20.0
 # 五合一传感器 (environmental)
