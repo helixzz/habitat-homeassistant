@@ -30,7 +30,7 @@ async def async_setup_entry(
     primary_uid = data.get("primary_uid", "")
     default_api: HabitatAPI = data["api"]
     coordinator: DataUpdateCoordinator = data["coordinator"]
-    gateway_identifier: str = data["gateway_identifier"]
+    gateway_device_id: str = data["gateway_device_id"]
     devices = coordinator.data or []
 
     numbers = []
@@ -57,7 +57,7 @@ async def async_setup_entry(
                 primary_uid,
                 default_api,
                 coordinator,
-                gateway_identifier,
+                gateway_device_id,
                 device_uid,
                 name,
                 "室温目标",
@@ -76,7 +76,7 @@ async def async_setup_entry(
                 primary_uid,
                 default_api,
                 coordinator,
-                gateway_identifier,
+                gateway_device_id,
                 device_uid,
                 name,
                 "湿度目标",
@@ -95,7 +95,7 @@ async def async_setup_entry(
                 primary_uid,
                 default_api,
                 coordinator,
-                gateway_identifier,
+                gateway_device_id,
                 device_uid,
                 name,
                 "空调风速",
@@ -117,7 +117,7 @@ async def async_setup_entry(
                     primary_uid,
                     default_api,
                     coordinator,
-                    gateway_identifier,
+                    gateway_device_id,
                     device_uid,
                     name,
                     "新风送风风速",
@@ -145,7 +145,7 @@ class HabitatNumber(NumberEntity):
         primary_uid: str,
         default_api: HabitatAPI,
         coordinator: DataUpdateCoordinator,
-        gateway_identifier: str,
+        gateway_device_id: str,
         device_uid: str,
         device_name: str,
         entity_name: str,
@@ -165,7 +165,7 @@ class HabitatNumber(NumberEntity):
         self._primary_uid = primary_uid
         self._default_api = default_api
         self._coordinator = coordinator
-        self._gateway_identifier = gateway_identifier
+        self._gateway_device_id = gateway_device_id
         self._device_uid = device_uid
         self._device_name = device_name
         self._entity_name = entity_name
@@ -249,7 +249,7 @@ class HabitatNumber(NumberEntity):
             name=self._device_name,
             manufacturer="栖息地",
             model="五合一面板",
-            via_device=(DOMAIN, self._gateway_identifier),
+            via_device_id=self._gateway_device_id,
         )
 
     async def async_set_native_value(self, value: float) -> None:

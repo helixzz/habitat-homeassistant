@@ -29,7 +29,7 @@ async def async_setup_entry(
     primary_uid = data.get("primary_uid", "")
     default_api: HabitatAPI = data["api"]
     coordinator: DataUpdateCoordinator = data["coordinator"]
-    gateway_identifier: str = data["gateway_identifier"]
+    gateway_device_id: str = data["gateway_device_id"]
     devices = coordinator.data or []
 
     lights = []
@@ -45,7 +45,7 @@ async def async_setup_entry(
                 if attr.get("name") == "devName":
                     name = attr.get("value", device_uid)
                     break
-            lights.append(HabitatLight(apis_by_uid, primary_uid, default_api, coordinator, gateway_identifier, device_uid, name, device))
+            lights.append(HabitatLight(apis_by_uid, primary_uid, default_api, coordinator, gateway_device_id, device_uid, name, device))
     async_add_entities(lights)
 
 
@@ -58,7 +58,7 @@ class HabitatLight(LightEntity):
         primary_uid: str,
         default_api: HabitatAPI,
         coordinator: DataUpdateCoordinator,
-        gateway_identifier: str,
+        gateway_device_id: str,
         device_uid: str,
         name: str,
         device_data: dict,
@@ -68,7 +68,7 @@ class HabitatLight(LightEntity):
         self._primary_uid = primary_uid
         self._default_api = default_api
         self._coordinator = coordinator
-        self._gateway_identifier = gateway_identifier
+        self._gateway_device_id = gateway_device_id
         self._device_uid = device_uid
         self._name = name
         self._device_data = device_data
@@ -145,7 +145,7 @@ class HabitatLight(LightEntity):
             name=self._name,
             manufacturer="栖息地",
             model="色温灯",
-            via_device=(DOMAIN, self._gateway_identifier),
+            via_device_id=self._gateway_device_id,
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
