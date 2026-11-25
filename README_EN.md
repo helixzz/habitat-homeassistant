@@ -245,6 +245,37 @@ Press and hold the button and watch the gateway attributes `state0`–`state6`:
 
 Listening also works: is there a relay click?
 
+## Cloud devices: the 4-in-1 water processor (cloud login required)
+
+Some devices are **not on the Zigbee gateway** and only exist in the Habitat cloud - the one
+measured here is the 4-in-1 water processor (`SHX-ECL1-V1`: filtration + softening + RO +
+heating). The local gateway API (`/gateway/*`) only exposes Zigbee devices, so these devices
+have to go through the **vendor cloud API**.
+
+### Enabling it
+
+1. Settings -> Devices & Services -> Habitat -> **Configure**
+2. Tick **Enable cloud account**, enter the phone number, then tick **Log in / re-login now**
+3. Submit; an SMS code is sent (iOS autofills it) - enter it to finish
+
+The cloud device then appears as its own device in HA (named after the cloud record, with the
+room coming from the cloud as well).
+
+### Entities (read-only)
+
+Raw/ purified TDS (ppm), softener and RO flow rates, remaining and total softened water,
+three filter-life percentages, raw-water hardness, running state, regeneration interval and
+time, and an alarm text.
+
+> **Why no control entities**: all 16 attributes are read-only (`control_cd=1`, versus `3` for
+> writable light attributes). The vendor exposes no control commands for this device.
+
+### Login lifetime
+
+The cloud has **no token refresh endpoint**; when the token expires a new SMS login is
+required. The integration triggers HA's re-authentication flow in that case, and gateway
+devices keep working.
+
 ## Troubleshooting
 
 ### Log shows “blocking call to import_module” or integration path is habitat-homeassistant
@@ -292,6 +323,28 @@ Clone or copy this repo into `custom_components/habitat/`, then restart HA or re
 Add new model mappings in `const.py` in `MODEL_PLATFORMS` and the relevant `*_MODELS` lists.
 
 ## Changelog
+
+### v0.4.0 (2026-11-26)
+
+**Cloud device support: the 4-in-1 water processor**
+
+Some devices are **not on the Zigbee gateway** and only exist in the vendor cloud. The one
+measured here is the 4-in-1 water processor (`SHX-ECL1-V1`: filtration + softening + RO +
+heating), which the local gateway API cannot see at all.
+
+- New **cloud account** option: phone number plus SMS code, with the token stored in the entry
+- A separate cloud coordinator (60 s by default, configurable) that is **fully isolated** from
+  the gateway coordinator, so cloud problems never affect lights, covers or switches
+- 14 read-only sensors: raw/purified TDS, softener and RO flow, remaining and total softened
+  water, three filter-life percentages, raw-water hardness, running state, regeneration
+  interval/time and an alarm text
+- Expired tokens trigger HA's **re-authentication** flow (the cloud has no refresh endpoint)
+- All 16 attributes are read-only (`control_cd=1`) and the vendor exposes no commands, so these
+  are sensors only
+
+**Measured details** (documented in `GATEWAY.md`): the cloud sits behind an Aliyun WAF that
+requires the app's User-Agent - without it requests "succeed" while no SMS is ever sent. The TLS
+certificate is valid, so no verification bypass is needed.
 
 ### v0.3.9 (2026-09-28)
 

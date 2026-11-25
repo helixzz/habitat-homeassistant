@@ -221,7 +221,9 @@ curl -s -X POST http://<网关IP>/gateway/setDeviceAttribute \
 
 ---
 
-## 7. 云端连接（仅记录，未使用）
+## 7. 云端连接
+
+### 7.1 网关自身的长连接（仅记录）
 
 | 用途 | 地址 |
 |---|---|
@@ -231,6 +233,65 @@ curl -s -X POST http://<网关IP>/gateway/setDeviceAttribute \
 | OTA | `https://ota.nanshe-tech.com/ota/fiveinone/<型号>/update.json` |
 
 云端下行与本地 API 走**同一个属性处理器**（`gm_down_dev_set_attr`），所以云端理论上能改任何一个本地能改的属性 —— 包括 `curtainDir`。
+
+### 7.2 App / 云端 REST API（集成已使用）
+
+有些设备**根本不在网关上**，只在云端有记录 —— 实测的就是**四合一水处理器**
+（`SHX-ECL1-V1`，设备号以 `YD` 开头，`product_type_code = WT`）。这类设备只能走云端。
+
+| 项目 | 值 |
+|---|---|
+| 云端主机 | `https://habitat-app-cloud.nanshe-tech.com` |
+| 证书 | DigiCert `*.nanshe-tech.com`，**有效**，不需要关闭 TLS 校验 |
+| 认证方式 | 只有短信验证码；token 在**响应头** `token`，之后放请求头 |
+| token 刷新 | **没有** —— 过期只能重新短信登录 |
+| 必带请求头 | `User-Agent: qi xi de/2.7.1 (iPhone; iOS 26.5.1; Scale/3.00)` |
+
+> ⚠️ **User-Agent 是硬要求**：云端前面有阿里云 WAF。不带 App 的 UA 时，`sms_code`
+> 接口会返回 `{"result_code":0,"data":true}` —— **看起来成功，但验证码根本不会发出**。
+> 第一次实测时就在这上面卡了很久（发了 8 次一条都没收到）。
+
+接口：
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/app-apis/user/v1/im/sms_code?mobile=<手机号>` | 请求验证码（免鉴权） |
+| POST | `/app-apis/user/v1/login/sms_code_login` | body `{"credential":"<验证码>","identifier":"<手机号>"}`，token 在响应头 |
+| POST | `/app-apis/user/v1/search/{home_id}/searchDeviceConditionByHome` | body `{"room_ids":[],"product_type_list":[]}`，一次拿全屋设备；`product_type_list` 可为 `["WT"]` 等 |
+| GET | `/app-apis/device/v1/{home_id}/{room_id}/{device_id}/getDeviceInfo` | 单台设备详情（含全部属性） |
+| POST | `/app-apis/user/logout` | 注销 |
+
+响应约定：业务成功 `result_code: 0`；失败 `result_code: 1` + `message`；鉴权失效是 **HTTP 401**。
+设备属性在 `data[].deviceInfo.list[].productTypeNodeAttrInfoList[]`，每项有
+`node_attr_name` / `value` / `describe` / `node_attr_control_cd`。
+
+### 7.3 `control_cd`：用它能判断属性可写性
+
+| 值 | 含义 | 实测对照 |
+|---|---|---|
+| `1` | 只读上报 | 水处理器的全部 16 个属性 |
+| `3` | 可读可写 | 灯的 `state` / `level` / `colorTemp`；面板的按键事件 |
+
+所以看到 `control_cd=1` 就不要再去找控制命令了 —— 厂商没开放。
+
+### 7.4 四合一水处理器属性表（`SHX-ECL1-V1` / `WT01`）
+
+| 属性 | 含义 | 单位/换算 |
+|---|---|---|
+| `ro_rwq` | RO 原水 TDS | 0~999 |
+| `ro_pwq` | RO 纯水 TDS | 0~999 |
+| `ins_fr` | 软水瞬时流量 | 原始值 ×0.01，单位 立方 |
+| `pw_ifr` | RO 净水瞬时流量 | 原始值 ×0.1，单位 升 |
+| `rw_pc` | 软水剩余制水量 | ×0.01 立方 |
+| `total_wcs` | 软水总用水量 | ×0.01 立方 |
+| `wpfe_pct` / `pce_pct` / `rof_pct` | 净化滤芯 / 后置活性炭 / RO 滤芯 寿命 | % |
+| `rw_hardness` | 原水硬度 | mg/L |
+| `running_state` | 运行状态 | 原始值（手册列出 7 个工艺阶段：净水软水供水、净化滤芯反洗、软化滤芯反洗、吸盐慢洗、软化滤芯正洗、盐箱补水、净化滤芯正洗；**数值到阶段的映射未确认**） |
+| `regrn_interval` | 软水再生间隔 | 天 |
+| `regrn_time` | 软水再生时间 | 字符串 `"时 ; 分"` |
+| `notice` | 告警文本 | 空表示无告警 |
+
+设备自带的 `product_manual_url` 指向产品手册 PDF，单位与换算都以它为准。
 
 ---
 

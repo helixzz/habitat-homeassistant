@@ -12,10 +12,16 @@ from homeassistant.const import CONF_PORT
 from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
     BIND_RELAY_LIST_ATTR,
+    CONF_CLOUD_ENABLED,
+    CONF_CLOUD_HOME_ID,
+    CONF_CLOUD_POLL_INTERVAL,
+    CONF_CLOUD_TOKEN,
+    DEFAULT_CLOUD_POLL_INTERVAL,
     BIND_RELAY_LIST_NONE,
     CONF_CURTAIN_DIR_OVERRIDES,
     CONF_CURTAIN_DIR_WATCHDOG,
@@ -33,6 +39,7 @@ from .const import (
     SWITCH_MODELS,
 )
 from .api import HabitatAPI
+from .cloud import HabitatCloudAPI, HabitatCloudCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -350,6 +357,53 @@ async def _reapply_panel_decouple(
     return written
 
 
+async def _async_setup_cloud(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> HabitatCloudCoordinator | None:
+    """搭建云端设备轮询（网关看不到的设备，如四合一水处理器）。
+
+    刻意与网关协调器**隔离**：云端挂了不能让整个集成（灯、窗帘、开关）跟着不可用，
+    所以首次同步失败只记警告并照常返回协调器，让周期性轮询自己去重试。
+    """
+    options = entry.options or {}
+    if not options.get(CONF_CLOUD_ENABLED):
+        return None
+    token = options.get(CONF_CLOUD_TOKEN)
+    home_id = options.get(CONF_CLOUD_HOME_ID)
+    if not token or not home_id:
+        _LOGGER.warning(
+            "云端账号已启用但尚未登录：请在集成选项中用短信验证码登录后，"
+            "云端设备（如四合一水处理器）才会出现"
+        )
+        return None
+
+    try:
+        interval = int(
+            options.get(CONF_CLOUD_POLL_INTERVAL, DEFAULT_CLOUD_POLL_INTERVAL)
+            or DEFAULT_CLOUD_POLL_INTERVAL
+        )
+    except (TypeError, ValueError):
+        interval = DEFAULT_CLOUD_POLL_INTERVAL
+    if interval < 10:
+        interval = DEFAULT_CLOUD_POLL_INTERVAL
+
+    api = HabitatCloudAPI(
+        async_get_clientsession(hass), token=token, home_id=home_id
+    )
+    coordinator = HabitatCloudCoordinator(
+        hass, api, interval, config_entry=entry
+    )
+    try:
+        await coordinator.async_config_entry_first_refresh()
+    except Exception as err:  # noqa: BLE001 - 云端异常不能拖垮整个集成
+        _LOGGER.warning(
+            "云端首次同步失败（%s: %s），网关设备不受影响，稍后自动重试",
+            type(err).__name__,
+            err,
+        )
+    return coordinator
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up 栖息地 from a config entry."""
     config = entry.data
@@ -429,6 +483,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "gateway_device_id": gateway_device.id,
         "gateway_identifier": entry.entry_id,
     }
+
+    # 云端设备（网关看不到的，如水处理器）：必须在平台加载前就绪
+    cloud_coordinator = await _async_setup_cloud(hass, entry)
+    if cloud_coordinator is not None:
+        hass.data[DOMAIN][entry.entry_id]["cloud_coordinator"] = cloud_coordinator
+        # 与网关协调器同样的坑：没有监听者就不会继续轮询
+        entry.async_on_unload(
+            cloud_coordinator.async_add_listener(lambda: None)
+        )
+        if cloud_coordinator.data:
+            _LOGGER.info(
+                "云端设备 %s 台：%s",
+                len(cloud_coordinator.data),
+                ", ".join(d.get("name", "?") for d in cloud_coordinator.data),
+            )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

@@ -84,6 +84,26 @@ CONF_CURTAIN_DIR_OVERRIDES = "curtain_dir_overrides"
 CONF_CURTAIN_DIR_WATCHDOG = "curtain_dir_watchdog"
 SERVICE_REAPPLY_CURTAIN_DIR = "reapply_curtain_direction"
 
+# --- 云端（App）账号 -------------------------------------------------------------
+# 有些设备**不在 Zigbee 网关上**，只存在于厂商云端（实测：四合一水处理器
+# SHX-ECL1-V1，设备号以 YD 开头）。这类设备只能通过云端 API 读取。
+# 云端登录只有短信验证码一种方式，且**没有 token 刷新接口** —— 过期后必须重新
+# 走一次短信登录（集成会触发 HA 的「重新认证」流程）。
+CONF_CLOUD_ENABLED = "cloud_enabled"
+CONF_CLOUD_MOBILE = "cloud_mobile"
+CONF_CLOUD_TOKEN = "cloud_token"
+CONF_CLOUD_HOME_ID = "cloud_home_id"
+CONF_CLOUD_POLL_INTERVAL = "cloud_poll_interval"
+# 云端前面有 WAF：请求必须伪装成 App 的 User-Agent，否则验证码根本不会发出
+CLOUD_AUTH_HOST = "habitat-app-cloud.nanshe-tech.com"
+CLOUD_APP_USER_AGENT = "qi xi de/2.7.1 (iPhone; iOS 26.5.1; Scale/3.00)"
+# 云端设备变化很慢（TDS、滤芯寿命），没必要频繁轮询
+DEFAULT_CLOUD_POLL_INTERVAL = 60
+CLOUD_POLL_INTERVAL_CHOICES = [30, 60, 120, 300]
+# 目前只接「水处理」：其余云端设备（空调/新风/地暖/传感器）都是五合一面板的
+# 虚拟子设备，网关侧已经能拿到，走云端反而会重复。
+CLOUD_WATER_TYPE = "WT"
+
 # --- 面板「按键直控继电器」解绑 -------------------------------------------------
 # 面板固件里有两套彼此独立的绑定：
 #   ① 组绑定     按键 → 向 Zigbee 组发组播命令（ownGroupList）

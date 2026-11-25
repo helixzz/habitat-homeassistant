@@ -10,13 +10,22 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers import area_registry as ar
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import HabitatAPI, HabitatAPIError
+from .cloud import HabitatCloudAPI, HabitatCloudError
 from .const import (
+    CLOUD_POLL_INTERVAL_CHOICES,
+    CONF_CLOUD_ENABLED,
+    CONF_CLOUD_HOME_ID,
+    CONF_CLOUD_MOBILE,
+    CONF_CLOUD_POLL_INTERVAL,
+    CONF_CLOUD_TOKEN,
     CONF_CURTAIN_DIR_OVERRIDES,
     CONF_CURTAIN_DIR_WATCHDOG,
     CONF_DECOUPLE_PANEL_BUTTONS,
     CONF_POLL_INTERVAL,
+    DEFAULT_CLOUD_POLL_INTERVAL,
     DEFAULT_HOST,
     DEFAULT_POLL_INTERVAL,
     DEFAULT_PORT,
@@ -84,6 +93,47 @@ def _coerce_poll_interval(value: Any) -> int:
     return seconds if seconds in POLL_INTERVAL_CHOICES else DEFAULT_POLL_INTERVAL
 
 
+def _coerce_cloud_interval(value: Any) -> int:
+    """云端轮询间隔收敛到合法取值。"""
+    try:
+        seconds = int(value)
+    except (TypeError, ValueError):
+        return DEFAULT_CLOUD_POLL_INTERVAL
+    return seconds if seconds in CLOUD_POLL_INTERVAL_CHOICES else DEFAULT_CLOUD_POLL_INTERVAL
+
+
+def _cloud_options_from_input(
+    user_input: dict[str, Any],
+    current_options: dict[str, Any],
+) -> dict[str, Any]:
+    """云端账号相关选项。关闭时清掉 token，避免留着无效凭据。"""
+    enabled = bool(
+        user_input.get(CONF_CLOUD_ENABLED, current_options.get(CONF_CLOUD_ENABLED, False))
+    )
+    mobile = str(
+        user_input.get(CONF_CLOUD_MOBILE)
+        or current_options.get(CONF_CLOUD_MOBILE)
+        or ""
+    ).strip()
+    token = current_options.get(CONF_CLOUD_TOKEN)
+    home_id = current_options.get(CONF_CLOUD_HOME_ID)
+    if not enabled:
+        token = None
+        home_id = None
+    return {
+        CONF_CLOUD_ENABLED: enabled,
+        CONF_CLOUD_MOBILE: mobile,
+        CONF_CLOUD_TOKEN: token,
+        CONF_CLOUD_HOME_ID: home_id,
+        CONF_CLOUD_POLL_INTERVAL: _coerce_cloud_interval(
+            user_input.get(
+                CONF_CLOUD_POLL_INTERVAL,
+                current_options.get(CONF_CLOUD_POLL_INTERVAL, DEFAULT_CLOUD_POLL_INTERVAL),
+            )
+        ),
+    }
+
+
 def _options_data_from_input(
     user_input: dict[str, Any],
     inverted_cover_uids: list[str],
@@ -115,6 +165,7 @@ def _options_data_from_input(
                 current_options.get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL),
             )
         ),
+        **_cloud_options_from_input(user_input, current_options),
     }
     host = (user_input.get("child_gateway_host") or "").strip()
     uid = (user_input.get("child_gateway_uid") or "").strip()
@@ -213,6 +264,77 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description="主机可填 IP 或主机名。建议使用路由器中为网关分配的主机名或 DHCP 保留名称，这样网关 IP 因 DHCP 变更后无需修改配置即可自动连接。",
         )
 
+    # --- 云端登录失效后的重新认证 -----------------------------------------
+    # 云端 token 没有刷新接口，过期只能重新短信登录。云端协调器抛
+    # ConfigEntryAuthFailed 时，HA 会带着 entry_id 进入下面这个流程。
+    async def async_step_reauth(self, entry_data: dict[str, Any]) -> FlowResult:
+        return await self.async_step_reauth_confirm()
+
+    def _reauth_entry(self):
+        entry_id = (self.context or {}).get("entry_id")
+        return self.hass.config_entries.async_get_entry(entry_id) if entry_id else None
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """确认手机号并发送验证码。"""
+        errors: dict[str, str] = {}
+        entry = self._reauth_entry()
+        options = (entry.options if entry else {}) or {}
+        mobile = str(options.get(CONF_CLOUD_MOBILE) or "")
+
+        if user_input is not None:
+            mobile = str(user_input.get(CONF_CLOUD_MOBILE) or mobile).strip()
+            api = HabitatCloudAPI(async_get_clientsession(self.hass))
+            try:
+                await api.async_request_sms_code(mobile)
+            except HabitatCloudError as err:
+                errors["base"] = str(err)
+            else:
+                self._cloud_mobile = mobile
+                return await self.async_step_reauth_code()
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema(
+                {vol.Required(CONF_CLOUD_MOBILE, default=mobile): str}
+            ),
+            errors=errors,
+        )
+
+    async def async_step_reauth_code(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """输入验证码，换取新 token 并写回选项。"""
+        errors: dict[str, str] = {}
+        entry = self._reauth_entry()
+        if entry is None:
+            return self.async_abort(reason="reauth_failed")
+
+        if user_input is not None:
+            code = str(user_input.get("cloud_code") or "").strip()
+            api = HabitatCloudAPI(async_get_clientsession(self.hass))
+            try:
+                token = await api.async_login(self._cloud_mobile, code)
+            except HabitatCloudError as err:
+                errors["base"] = str(err)
+            else:
+                options = dict(entry.options or {})
+                options[CONF_CLOUD_TOKEN] = token
+                options[CONF_CLOUD_HOME_ID] = api.home_id
+                options[CONF_CLOUD_MOBILE] = self._cloud_mobile
+                options[CONF_CLOUD_ENABLED] = True
+                self.hass.config_entries.async_update_entry(entry, options=options)
+                await self.hass.config_entries.async_reload(entry.entry_id)
+                return self.async_abort(reason="reauth_successful")
+
+        return self.async_show_form(
+            step_id="reauth_code",
+            data_schema=vol.Schema({vol.Required("cloud_code"): str}),
+            errors=errors,
+            description_placeholders={"mobile": self._cloud_mobile},
+        )
+
     @staticmethod
     def async_get_options_flow(
         config_entry: config_entries.ConfigEntry,
@@ -221,7 +343,61 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class HabitatOptionsFlow(config_entries.OptionsFlow):
-    """栖息地集成的选项流程：窗帘反向。"""
+    """栖息地集成的选项流程：窗帘反向 / 面板解绑 / 云端账号。"""
+
+    def __init__(self) -> None:
+        self._pending_options: dict[str, Any] = {}
+        self._cloud_mobile: str = ""
+
+    async def _async_save_or_login(
+        self, options_data: dict[str, Any], user_input: dict[str, Any]
+    ) -> FlowResult:
+        """保存选项；若勾选了「登录云端账号」，则先发验证码再进入验证码步骤。"""
+        if not user_input.get("cloud_login"):
+            return self.async_create_entry(title="", data=options_data)
+
+        mobile = str(options_data.get(CONF_CLOUD_MOBILE) or "").strip()
+        if not mobile:
+            # 没填手机号就没法登录，先保存其余选项
+            return self.async_create_entry(title="", data=options_data)
+
+        api = HabitatCloudAPI(async_get_clientsession(self.hass))
+        try:
+            await api.async_request_sms_code(mobile)
+        except HabitatCloudError as err:
+            _LOGGER.warning("请求云端短信验证码失败：%s", err)
+            return self.async_create_entry(title="", data=options_data)
+
+        self._pending_options = options_data
+        self._cloud_mobile = mobile
+        return await self.async_step_cloud_code()
+
+    async def async_step_cloud_code(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """输入云端登录的短信验证码。"""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            code = str(user_input.get("cloud_code") or "").strip()
+            api = HabitatCloudAPI(async_get_clientsession(self.hass))
+            try:
+                token = await api.async_login(self._cloud_mobile, code)
+            except HabitatCloudError as err:
+                errors["base"] = str(err)
+            else:
+                options = dict(self._pending_options)
+                options[CONF_CLOUD_TOKEN] = token
+                options[CONF_CLOUD_HOME_ID] = api.home_id
+                options[CONF_CLOUD_ENABLED] = True
+                options[CONF_CLOUD_MOBILE] = self._cloud_mobile
+                return self.async_create_entry(title="", data=options)
+
+        return self.async_show_form(
+            step_id="cloud_code",
+            data_schema=vol.Schema({vol.Required("cloud_code"): str}),
+            errors=errors,
+            description_placeholders={"mobile": self._cloud_mobile},
+        )
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -272,11 +448,32 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
             ): vol.In(POLL_INTERVAL_CHOICES),
         }
 
+        # 云端账号：用于「网关看不到」的设备（四合一水处理器）。
+        # 登录只有短信验证码一种方式，且没有刷新接口 —— 过期需重新登录。
+        cloud_fields = {
+            vol.Optional(
+                CONF_CLOUD_ENABLED,
+                default=bool(opts.get(CONF_CLOUD_ENABLED, False)),
+            ): bool,
+            vol.Optional(
+                CONF_CLOUD_MOBILE,
+                default=str(opts.get(CONF_CLOUD_MOBILE, "")),
+            ): str,
+            vol.Optional("cloud_login", default=False): bool,
+            vol.Optional(
+                CONF_CLOUD_POLL_INTERVAL,
+                default=_coerce_cloud_interval(
+                    opts.get(CONF_CLOUD_POLL_INTERVAL, DEFAULT_CLOUD_POLL_INTERVAL)
+                ),
+            ): vol.In(CLOUD_POLL_INTERVAL_CHOICES),
+        }
+
         if not covers:
             schema = {
                 vol.Optional("_no_covers", default=True): bool,
                 **watchdog_fields,
                 **poll_fields,
+                **cloud_fields,
                 **main_fields,
                 **child_fields,
             }
@@ -285,7 +482,7 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
                 self.hass.config_entries.async_update_entry(entry, data=new_data)
                 self.hass.config_entries.async_schedule_reload(entry.entry_id)
                 options_data = _options_data_from_input(user_input, list(inverted), opts)
-                return self.async_create_entry(title="", data=options_data)
+                return await self._async_save_or_login(options_data, user_input)
             return self.async_show_form(
                 step_id="init",
                 data_schema=vol.Schema(schema),
@@ -297,6 +494,7 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
         schema = {vol.Optional(key_for(uid, name), default=uid in inverted): bool for uid, name in covers}
         schema.update(watchdog_fields)
         schema.update(poll_fields)
+        schema.update(cloud_fields)
         schema.update(main_fields)
         schema.update(child_fields)
         data_schema = vol.Schema(schema)
@@ -310,7 +508,7 @@ class HabitatOptionsFlow(config_entries.OptionsFlow):
                 if user_input.get(key_for(uid, name), False)
             ]
             options_data = _options_data_from_input(user_input, inverted_cover_uids, opts)
-            return self.async_create_entry(title="", data=options_data)
+            return await self._async_save_or_login(options_data, user_input)
         return self.async_show_form(
             step_id="init",
             data_schema=data_schema,
