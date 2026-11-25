@@ -2,20 +2,61 @@
 
 import logging
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, UnitOfTemperature
+from homeassistant.const import (
+    PERCENTAGE,
+    UnitOfTemperature,
+    UnitOfVolume,
+    UnitOfVolumeFlowRate,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+    DataUpdateCoordinator,
+)
 
 from .api import HabitatAPI
-from .const import DOMAIN, SENSOR_MODELS, AC_MODELS, FA_MODEL, GA_MODEL
+from .const import (
+    AC_MODELS,
+    CLOUD_WATER_TYPE,
+    DOMAIN,
+    FA_MODEL,
+    GA_MODEL,
+    SENSOR_MODELS,
+)
 from .helpers import HabitatAvailabilityMixin, is_main_panel
 
 _LOGGER = logging.getLogger(__name__)
+
+# 四合一水处理器（SHX-ECL1-V1）的属性 → 传感器。
+# 该设备**不在 Zigbee 网关上**，只能从厂商云端读取，且 16 个属性全部只读
+# （control_cd=1，对照：可写的灯属性是 3），所以只做传感器、没有控制实体。
+# 字段：属性名, 实体名, 倍率, 单位, device_class, state_class, 图标
+# 倍率与单位依据设备自带的 describe 字段（例如 ins_fr「1111 表示 11.11 立方」→ ×0.01）。
+WATER_SENSORS: tuple[tuple, ...] = (
+    ("ro_rwq", "原水 TDS", 1, "ppm", None, SensorStateClass.MEASUREMENT, "mdi:water-percent"),
+    ("ro_pwq", "纯水 TDS", 1, "ppm", None, SensorStateClass.MEASUREMENT, "mdi:water-percent"),
+    ("ins_fr", "软水瞬时流量", 0.01, UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR, None, SensorStateClass.MEASUREMENT, "mdi:waves-arrow-right"),
+    ("pw_ifr", "净水瞬时流量", 0.1, UnitOfVolumeFlowRate.LITERS_PER_MINUTE, None, SensorStateClass.MEASUREMENT, "mdi:water-pump"),
+    ("rw_pc", "软水剩余制水量", 0.01, UnitOfVolume.CUBIC_METERS, None, SensorStateClass.MEASUREMENT, "mdi:water-minus"),
+    ("total_wcs", "软水总用水量", 0.01, UnitOfVolume.CUBIC_METERS, None, SensorStateClass.TOTAL_INCREASING, "mdi:water"),
+    ("wpfe_pct", "净化滤芯寿命", 1, PERCENTAGE, None, SensorStateClass.MEASUREMENT, "mdi:filter"),
+    ("pce_pct", "后置活性炭滤芯寿命", 1, PERCENTAGE, None, SensorStateClass.MEASUREMENT, "mdi:filter"),
+    ("rof_pct", "RO 滤芯寿命", 1, PERCENTAGE, None, SensorStateClass.MEASUREMENT, "mdi:filter"),
+    ("rw_hardness", "原水硬度", 1, "mg/L", None, SensorStateClass.MEASUREMENT, "mdi:water-opacity"),
+    ("running_state", "运行状态", 1, None, None, None, "mdi:state-machine"),
+    ("regrn_interval", "软水再生间隔", 1, "d", None, None, "mdi:calendar-clock"),
+    ("regrn_time", "软水再生时间", 1, None, None, None, "mdi:clock-outline"),
+    ("notice", "告警", 1, None, None, None, "mdi:alert-circle-outline"),
+)
 
 
 async def async_setup_entry(
@@ -115,6 +156,19 @@ async def async_setup_entry(
                 HabitatSensor(api, coordinator, gateway_device_id, device_uid, name, "气体浓度", device, "sensor_gas_concentration", None, "ppm")
             )
     
+    # --- 云端设备（Zigbee 网关上没有的）：四合一水处理器 -------------------
+    cloud_coordinator = data.get("cloud_coordinator")
+    if cloud_coordinator is not None:
+        for cloud_device in cloud_coordinator.data or []:
+            if cloud_device.get("type_code") != CLOUD_WATER_TYPE:
+                continue
+            for spec in WATER_SENSORS:
+                sensors.append(
+                    HabitatCloudWaterSensor(
+                        cloud_coordinator, cloud_device, gateway_device_id, *spec
+                    )
+                )
+
     async_add_entities(sensors)
 
 
@@ -211,3 +265,85 @@ class HabitatSensor(HabitatAvailabilityMixin, SensorEntity):
                 self._device_data = device
                 self._update_state()
                 break
+
+
+class HabitatCloudWaterSensor(CoordinatorEntity, SensorEntity):
+    """云端设备（四合一水处理器）的传感器。
+
+    数据来自 HabitatCloudCoordinator（厂商云端 API），不是本地网关。
+    """
+
+    def __init__(
+        self,
+        coordinator,
+        device: dict,
+        gateway_device_id: str,
+        key: str,
+        name: str,
+        scale: float,
+        unit,
+        device_class,
+        state_class,
+        icon: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._gateway_device_id = gateway_device_id
+        self._device_id = device.get("device_id", "")
+        self._device_number = device.get("device_number", "")
+        self._device_name = device.get("name", "水处理")
+        self._model_name = device.get("model_name") or device.get("model") or "水处理"
+        self._room = device.get("room") or None
+        self._key = key
+        self._scale = scale
+        self._device_class = device_class
+        self._attr_name = name
+        self._attr_icon = icon
+        self._attr_state_class = state_class
+        self._attr_native_unit_of_measurement = unit
+        self._attr_unique_id = f"habitat_cloud_{self._device_number}_{key}"
+
+    def _current(self) -> dict | None:
+        for dev in self.coordinator.data or []:
+            if dev.get("device_id") == self._device_id:
+                return dev
+        return None
+
+    @property
+    def available(self) -> bool:
+        device = self._current()
+        return super().available and bool(device and device.get("online"))
+
+    @property
+    def native_value(self):
+        device = self._current()
+        if not device:
+            return None
+        raw = (device.get("attrs") or {}).get(self._key)
+        if raw is None or raw == "":
+            return None
+        # 倍率 1 时尽量保持原类型（例如 "1 ; 5" 这种时刻串）
+        if self._scale == 1:
+            try:
+                number = float(raw)
+            except (TypeError, ValueError):
+                return str(raw)
+            return int(number) if number.is_integer() else number
+        try:
+            return round(float(raw) * self._scale, 2)
+        except (TypeError, ValueError):
+            return None
+
+    @property
+    def device_class(self):
+        return self._device_class
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return DeviceInfo(
+            identifiers={(DOMAIN, f"cloud_{self._device_number}")},
+            name=self._device_name,
+            manufacturer="栖息地",
+            model=self._model_name,
+            suggested_area=self._room,
+            via_device_id=self._gateway_device_id,
+        )

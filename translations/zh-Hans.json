@@ -4,20 +4,51 @@
       "user": {
         "title": "栖息地智能家庭",
         "description": "请填写网关连接信息。"
+      },
+      "reauth_confirm": {
+        "title": "重新登录云端账号",
+        "description": "栖息地云端的登录已失效（token 没有刷新接口，需重新短信登录）。确认手机号后点提交，会给它发送验证码。",
+        "data": {
+          "cloud_mobile": "手机号"
+        }
+      },
+      "reauth_code": {
+        "title": "输入云端验证码",
+        "description": "已向 {mobile} 发送验证码（iOS 会在输入框上方自动提示）。",
+        "data": {
+          "cloud_code": "短信验证码"
+        }
       }
+    },
+    "abort": {
+      "reauth_successful": "云端账号重新登录成功",
+      "reauth_failed": "重新登录失败"
+    },
+    "error": {
+      "unknown": "发生未知错误，请查看日志"
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "栖息地集成选项",
-        "description": "窗帘方向看护、面板按键解绑与轮询间隔。",
         "data": {
-          "poll_interval": "状态轮询间隔（秒）",
-          "curtain_dir_watchdog": "窗帘方向看护（网关重连/集成启动时自动补发方向）",
-          "decouple_panel_buttons": "面板按键解绑（按键改发 Zigbee 组播控灯，不再切断灯控器供电；需该面板所属网关上已有按键分组）"
+          "cloud_enabled": "启用云端账号（用于网关看不到的设备，如四合一水处理器）",
+          "cloud_mobile": "云端账号手机号",
+          "cloud_login": "立即登录/重新登录云端（需要短信验证码）",
+          "cloud_poll_interval": "云端轮询间隔（秒）"
+        }
+      },
+      "cloud_code": {
+        "title": "登录云端账号",
+        "description": "已向 {mobile} 发送验证码（iOS 会在输入框上方自动提示）。输入后可获取网关看不到的设备，例如四合一水处理器。",
+        "data": {
+          "cloud_code": "短信验证码"
         }
       }
+    },
+    "error": {
+      "network": "无法连接云端",
+      "auth": "验证码错误或已过期"
     }
   }
 }
